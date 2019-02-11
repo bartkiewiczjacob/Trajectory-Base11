@@ -2,7 +2,7 @@
 clc;
 clear;
 i = 1;
-load_system('Purdue_Sim');
+load_system('Purdue_Sim_Fast');
 Thurst = 6500;
 data = load('aerodata.csv');
 m_dot = -22.7; %[lbs/sec]
@@ -22,7 +22,7 @@ I_wet = 1/12 * wet_mass_slugs * [3*(diameter_ft/2)^2, 0, 0; ...
 I_dry = 1/12 * dry_mass_slugs * [3*(diameter_ft/2)^2, 0, 0; ...
                            0, length^2 + 3*(diameter_ft/2)^2, 0; ...
                            0, 0, length^2 + 3*(diameter_ft/2)^2]; %[dry mass Inertia Tensor]
-sim('Purdue_Sim');
+sim('Purdue_Sim_Fast');
 disp(max(height));
 disp(max(velocity));
 
