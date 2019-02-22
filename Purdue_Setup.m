@@ -22,10 +22,10 @@ I_wet = 1/12 * wet_mass_slugs * [3*(diameter_ft/2)^2, 0, 0; ...
 I_dry = 1/12 * dry_mass_slugs * [3*(diameter_ft/2)^2, 0, 0; ...
                            0, length^2 + 3*(diameter_ft/2)^2, 0; ...
                            0, 0, length^2 + 3*(diameter_ft/2)^2]; %[dry mass Inertia Tensor]
-sim('Purdue_Sim')
+%sim('Purdue_Sim')
 %plot3(trajectory(:,1), trajectory(:,2), trajectory(:,3));
 %grid on;
 %view(30,30);
-burn = trajectory - drift;
+%burn = trajectory - drift;
 
 
