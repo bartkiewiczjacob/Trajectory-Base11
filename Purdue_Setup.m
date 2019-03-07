@@ -1,18 +1,20 @@
-
 clc;
 clear;
 i = 1;
 load_system('Purdue_Sim');
 Thrust = 5000;
+eul_0 = [0,0,0];
+k_quat = 1;
+quat_statename = 'quat';
 initial_height = 4600;
 data = load('aerodata.csv');
 m_dot = -20; %[lbs/sec]
 m_dot_slugs = m_dot / 32.2; %[slugs/sec]
 diameter = 18; %[in]
 diameter_ft = diameter / 12; %[ft]
-length = 20; %[ft]
+length = 24; %[ft]
 burn_time = 200000/Thrust; %[sec]
-wet_mass = 1400; %[lbs]
+wet_mass = 1200; %[lbs]
 dry_mass = wet_mass + m_dot * burn_time; %[lbs]
 wet_mass_slugs = wet_mass / 32.2; %[slugs]
 dry_mass_slugs = dry_mass / 32.2; %[slugs]
