@@ -5,9 +5,13 @@
 #www.ids-net.com
 
 
+SpotLight {
+	direction	0 -1 -3.42285e-008
+	location	0 100 0
+}
 DEF Rocket Transform {
 	translation	0 0 0
-	scale	1.75 1.75 1.75
+	scale	3.6 3.6 3.6
 	children Group {
 		children [ 
 		    NavigationInfo {
@@ -2828,10 +2832,6 @@ DEF Rocket Transform {
 		    }
 		]
 	}
-}
-SpotLight {
-	direction	0 -1 -3.42285e-008
-	location	0 100 0
 }
 DEF CP Transform {
 	translation	0 0 0
