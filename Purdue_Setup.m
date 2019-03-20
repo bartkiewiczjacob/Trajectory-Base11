@@ -28,6 +28,7 @@ sim('Purdue_Sim');
 j = 1;
 Mach_op = [];
 density_op = [];
+altitude_op = [10000];
 for i = 1:1373
     for k = 1:length(Mach_op)
         if abs(Mach(i) - Mach_op(k)) < 0.001
@@ -37,6 +38,12 @@ for i = 1:1373
     end
     for x = 1:length(density_op)
         if abs(density(i) - density_op(x)) < 0.001
+            op(j) = time(i);
+            j = j + 1;
+        end
+    end
+    for y = 1:length(altitude_op)
+        if abs(altitude(i) - altitude_op(y)) < 10
             op(j) = time(i);
             j = j + 1;
         end
