@@ -6,7 +6,7 @@ Thrust = 5000;
 eul_0 = [0,0,0];
 k_quat = 1;
 quat_statename = 'quat';
-initial_height = 4600;
+initial_height = 0;
 data = load('aerodata.csv');
 m_dot = -20; %[lbs/sec]
 m_dot_slugs = m_dot / 32.2; %[slugs/sec]
@@ -26,26 +26,28 @@ I_dry = 1/12 * dry_mass_slugs * [3*(diameter_ft/2)^2, 0, 0; ...
                            0, 0, rocket_length^2 + 3*(diameter_ft/2)^2]; %[dry mass Inertia Tensor]
 sim('Purdue_Sim');
 j = 1;
-Mach_op = [];
-density_op = [];
-altitude_op = [10000];
-for i = 1:1373
+Mach_op = [0.3 0.8 1.2 3.4];
+density_op = [0.002377 0.002377/5 0.002377/10 0.002377/50 0.002377/100];
+altitude_op = [];
+n = 1;
+m = 1;
+for i = 1:1357
     for k = 1:length(Mach_op)
-        if abs(Mach(i) - Mach_op(k)) < 0.001
-            op(j) = time(i);
+        if abs(Mach(i) - Mach_op(k)) < 0.0022
+            mach_time_op(j) = time(i);
             j = j + 1;
         end
     end
     for x = 1:length(density_op)
-        if abs(density(i) - density_op(x)) < 0.001
-            op(j) = time(i);
-            j = j + 1;
+        if abs(density(i) - density_op(x)) < 0.0000001
+            density_time_op(n) = time(i);
+            n = n + 1;
         end
     end
     for y = 1:length(altitude_op)
         if abs(altitude(i) - altitude_op(y)) < 10
-            op(j) = time(i);
-            j = j + 1;
+            op(m) = time(i);
+            m = m + 1;
         end
     end
 end
