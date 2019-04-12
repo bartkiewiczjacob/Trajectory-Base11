@@ -24,6 +24,11 @@ I_wet = 1/12 * wet_mass_slugs * [3*(diameter_ft/2)^2, 0, 0; ...
 I_dry = 1/12 * dry_mass_slugs * [3*(diameter_ft/2)^2, 0, 0; ...
                            0, rocket_length^2 + 3*(diameter_ft/2)^2, 0; ...
                            0, 0, rocket_length^2 + 3*(diameter_ft/2)^2]; %[dry mass Inertia Tensor]
+sim('Purdue_Sim');
+plot(time, q);
+title('Velocity vs. Altitude');
+xlabel('Altitude [ft]');
+ylabel('Velocity [ft/s]');
 
 
 
