@@ -1,4 +1,8 @@
-T = 5000; % N
+clear; clc; close all;
+
+global T D L G V m J h cp cu init ts
+
+T = 10000; % N
 m_dot = -20*0.453592; % kg/s
 diam = 18*0.0254; % m
 S = pi*diam^2/4; % m2
@@ -23,85 +27,136 @@ Ma_val = [0:0.01:5]';
 alpha_val = [0:15]'; % rad
 CD_data_mach = data_mach(:, 3);
 CL_data_mach = data_mach(:, 8);
-CP_data_mach = data_mach(:, 13);
+CP_data_mach = data_mach(:, 13)*0.0254;
 CD_fit_alpha = [];
 CL_fit_alpha = [];
 CP_fit_alpha = [];
 for iter = 1:5
-    CD_fit_alpha = [CD_fit_alpha, polyfit(alpha_val, data_alpha(iter:5:end,3), 2)']
-    CL_fit_alpha = [CL_fit_alpha, polyfit(alpha_val, data_alpha(iter:5:end,8), 1)']
-    CP_fit_alpha = [CP_fit_alpha, polyfit(alpha_val, data_alpha(iter:5:end,13), 4)']
+    CD_fit_alpha = [CD_fit_alpha, polyfit(alpha_val, data_alpha(iter:5:end,3), 2)'];
+    CL_fit_alpha = [CL_fit_alpha, polyfit(alpha_val, data_alpha(iter:5:end,8), 1)'];
+    CP_fit_alpha = [CP_fit_alpha, polyfit(alpha_val, data_alpha(iter:5:end,13)*0.0254, 4)'];
 end
-CD_fit_alpha(end, :) = []
-CL_fit_alpha(end, :) = []
-CP_fit_alpha(end, :) = []
+CD_fit_alpha(end, :) = [];
+CL_fit_alpha(end, :) = [];
+CP_fit_alpha(end, :) = [];
 
-t_step = 0.5; % s
-t = 0; % s
-h = 0; % m
-m = m_wet; % kg
-v = [0 0]; % m/s
-pitch = 3*pi/180; % rad
+ts = 0.5; % s
+h = 0; % mm = m_wet; % kg
+m = m_wet;
+J = m * [1/2*r^2, 0, 0; 0, 1/12*len^2 + 1/4*r^2, 0; 0, 0, 1/12*len^2 + 1/4*r^2];
+
+theta = 0.1*pi/180; % rad
+B2E = [cos(pi/2+theta) 0 sin(pi/2+theta); 0 1 0; -sin(pi/2+theta) 0 cos(pi/2+theta)];
 phi = 0;
-alpha = pitch;
-att = [sin(pitch) -cos(pitch)];
-alpha_dot = 0; % rad/s
-phi_dot = 0; % rad/s
+V = 0;
+alpha = theta - phi;
+
 CG = len - 16.6995*0.3048; % m from tip
-CP = CG; 
-l = CG - CU; % m
-ksi = CP - CG; % m
+tip = B2E*[-CG; 0; 0];
+cp = B2E*[0; 0; 0]; 
+CU = 1;
+cu = B2E*[-(CG-CU); 0; 0];
+
 U = 0;
 
-% first iteration
-V = norm(v);
-v_perp = [v(2), -v(1)];
-v_unit = v/V;
+figure(1); hold on;
+time = 0;
+plot(time, theta*180/pi, '*');
+xlabel('Time [s]'); ylabel('Pitch [°]');
+figure(2); hold on;
+plot(time, V, '*')
+xlabel('Time [s]'); ylabel('Ma [ ]');
 
-[T, c, P, rho] = atmosisa(h);
-Ma = V/c;
+%% first iteration
+att = B2E*[1; 0; 0];
+
+[temp, c, P, rho] = atmosisa(h);
+
+Ma = round(V/c, 2);
 [CD, CL, CP] = aero_coeff(Ma, alpha);
-
-t = T*att;
-L = 1/2*rho*V^2*S*CL;
-l = L * v_perp;
+L = -sign(alpha)*1/2*rho*V^2*S*CL;
 D = 1/2*rho*V^2*S*CD;
+G = m*9.81;
+
+v = [0; 0; 0];
+v_unit = [0; 0; 0];
+v_perp = [0; 0; 0];
+
+t = T * att;
+l = L * v_perp;
 d = D * -v_unit;
-g = [0, m*g];
+g = [0; 0; G];
+u = B2E*[0; 0; U];
 
-f = t+l+d+g;
+f = t+l+d+g+u;
 a = f/m;
-h = a*t_step^2/2 + V*t_step + h;
-v = v + a*t_step;
+h = a(3)*ts^2/2 + v(3)*ts + h;
 
-alpha_dot = 1/J(2,2) * (-L*cos(alpha)*ksi + D*sin(alpha)*ksi + U*l);
-alpha = alpha + alpha_dot*t_step;
+theta_dot = 1/J(2,2) * (cross(l,cp) + cross(d,cp) + cross(u,cu));
+theta_dot = theta_dot(2);
 
-m = m + m_dot*t_step;
-J = m * [1/2*r^2, 0, 0; 0, 1/12*len^2 + 1/4*r^2, 0; 0, 0, 1/12*len^2 + 1/4*r^2];
-CG = CG + CG_dot*t_step;
-l = CG - CU; % m
-ksi = CP - CG; % m
+v = v + a*ts;
+V = norm(v);
 
-while t <= burn
-    [T, c, P, rho] = atmosisa(h); 
+theta = theta + theta_dot*ts;
+phi = atan(v(1)/v(3));
+alpha = theta - phi;
+init = [theta; phi]; % for sfun
+
+m = m + m_dot*ts;
+CG = CG + CG_dot*ts;
+tip = B2E*[-CG; 0; 0];
+cp = B2E*[CP-CG; 0; 0];
+cu = B2E*[-(CG-CU); 0; 0];
+
+[A,B,C,D]=linmod('pitch_sim_mdl',[0;0],0);
+K = place(A,B,[-10 -11]);
+U = -K*[theta; phi];
+
+time = time + ts;
+figure(1)
+plot(time, theta*180/pi, '*');
+figure(2)
+plot(time, Ma, '*');
+
+%% main loop
+while time <= 20 
+    [temp, c, P, rho] = atmosisa(h);
+
+    Ma = round(V/c, 2);
+    [CD, CL, CP] = aero_coeff(Ma, alpha);
+    L = -sign(alpha)*1/2*rho*V^2*S*CL;
+    D = 1/2*rho*V^2*S*CD;
+    G = m*9.81;
     
-    if m + m_dot*t_step >= m_dry
-        m = m + m_dot*t_step;
-    else
-        m = m_dry;
+    x(1) = theta;
+    x(2) = phi;
+    [xdot] = pitch_sim_eqns([],x,U);
+    theta_dot = xdot(1);
+    phi_dot = xdot(2);
+    
+    theta = theta + theta_dot*ts;
+    phi = phi + phi_dot*ts;
+    alpha = theta - phi;
+    init = [theta; phi]; % for sfun
+    
+    m = m + m_dot*ts;
+    CG = CG + CG_dot*ts;
+    tip = B2E*[-CG; 0; 0];
+    cp = B2E*[CP-CG; 0; 0];
+    cu = B2E*[-(CG-CU); 0; 0];
+    
+    [A,B,C,D]=linmod('pitch_sim_mdl',[0;0],0);
+    K = place(A,B,[-10 -11]);
+    U = -K*[theta; phi];
+
+    time = time + ts;
+    if time == 2.5
+        keyboard;
     end
-    
-    if CG + CG_dot*t_step >= CG_lim
-        CG = CG + CG_dot*t_step;
-    else
-        CG = CG_lim;
-    end
-        
-    J = m * [1/2*r^2, 0, 0; 0, 1/12*len^2 + 1/4*r^2, 0; 0, 0, 1/12*len^2 + 1/4*r^2];
-    
-    Ma = norm(V)/c;
-    
-    
-    T = thrust*att; % N, vector
-    
+    figure(1)
+    plot(time, theta*180/pi, '*');
+    figure(2)
+    plot(time, Ma, '*');
+
+end
