@@ -2,7 +2,7 @@ clear; clc; close all;
 
 % make the following variables accessible to all scripts and functions
 % without needing to define them
-global T D L G V m J cp cu init ts time
+global V X Y phiY_body m J CG cu Ma UZ ts Z phiZ_body UY rho S T initY initZ
 
 % rocket parameters and properties
 T = 7000; % N
@@ -67,16 +67,7 @@ Z = 0.1*pi/180; % yaw angle
 BX = [1, 0, 0; 0, cos(X), -sin(X); 0, sin(X), cos(X)];
 BY = [cos(pi/2+Y), 0, sin(pi/2+Y); 0, 1, 0; -sin(pi/2+Y), 0, cos(pi/2+Y)];
 BZ= [cos(Z), -sin(Z), 0; sin(Z), cos(Z), 0; 0, 0, 1];
-B2E = BZ*BY*BX; % order of rotations: X, Y, Z
-
-% velocity to Earth-z angles
-phiX = 0;
-phiY = 0;
-
-% V2E matrices
-VX = [1, 0, 0; 0, cos(phiX), -sin(phiX); 0, sin(phiX), cos(phiX)];
-VY = [cos(pi/2+phiY), 0, sin(pi/2+phiY); 0, 1, 0; -sin(pi/2+phiY), 0, cos(pi/2+phiY)];
-V2E = VY*VX; % order of rotations: X, Y
+B2E = BX*BY*BZ; % order of rotations: X, Y, Z
 
 att = B2E*[1; 0; 0];
 v = [0; 0; 0];
@@ -85,14 +76,11 @@ v_unit = v;
 v_perp = v;
 
 % projection of velocity vector in planes perpendicular to Y and Z body
-v_body = inv(B2E)*V2E*v_unit;
-v_body_Y = body_plane_proj(v_body,'y');
+v_body = B2E\v_unit;
+v_body_Y = [v_body(1); 0; v_body(3)];
 v_body_Y = v_body_Y/norm(v_body_Y);
-v_body_Z = body_plane_proj(v_body,'z');
+v_body_Z = [v_body(1); v_body(2); 0];
 v_body_Z = v_body_Z/norm(v_body_Z);
-
-alphaY = acos( dot(v_body_Y,[1; 0; 0]) );
-alphaZ = acos( dot(v_body_Z,[1; 0; 0]) );
 
 % phi angles in planes perpendicular to Y and Z body
 phiY_body = acos( dot(B2E*v_body_Y,[-1; 0; 0]) );
@@ -103,13 +91,14 @@ initY = [Y; phiY_body];
 initZ = [Z; phiZ_body];
 
 CG = len - 16.6995*0.3048; % tip to CG, m
-tip = B2E*[-CG; 0; 0]; % tip to CG, vector
+tip = [-CG; 0; 0]; % tip to CG, vector
 CP = 0; % m
-cp = B2E*[CP; 0; 0]; % CP to CG, vector
+cp = [CP; 0; 0]; % CP to CG, vector
 CU = 1; % tip to CU, m
-cu = B2E*[-(CG-CU); 0; 0]; % CU to CG, vector
+cu = [-(CG-CU); 0; 0]; % CU to CG, vector
 
-U = 0; % input magnitude, N
+UY = 0; % input magnitude, N
+UZ = 0;
 L = 0;
 D = 0;
 G = m*9.81;
@@ -117,32 +106,31 @@ G = m*9.81;
 time = 0;
 
 % initialize plots
-% figure(1); hold on;
-% plot(time, theta*180/pi, '*k');
-% xlabel('Time [s]'); ylabel('Pitch [°]');
-% figure(2); hold on;
-% plot(time, V, '*y')
-% xlabel('Time [s]'); ylabel('Ma [ ]');
+figure(1); hold on;
+plot(time, Y*180/pi, '*k');
+xlabel('Time [s]'); ylabel('Pitch [°]');
+figure(2); hold on;
+plot(time, Z*180/pi, '*y')
+xlabel('Time [s]'); ylabel('Yaw [°]');
 % figure(3); hold on;
 % plot(time, h, '*b')
 % xlabel('Time [s]'); ylabel('Altitude [m]');
 % figure(4); hold on;
 % xlabel('Time [s]'); ylabel('\Phi [°]');
-% figure(5); hold on;
-% xlabel('Time [s]'); ylabel('Control moment [Nm]');
+figure(5); hold on;
+xlabel('Time [s]'); ylabel('Control moment [Nm]');
 
 %% main loop
-while time <= burn 
+while time <= 3 
     % forces 
     t = T * att;
     l = L * v_perp;
     d = D * -v_unit;
     g = [0; 0; G];
-    uY = B2E*[0; 0; UY];
-    uZ = B2E*[0; UZ; 0]
+    u = B2E*[0; UZ; UY];
     
     % kinematics, assume no dynamics during ts
-    f = t+l+d+g+uY+uZ;
+    f = t+l+d+g+u;
     a = f/m;
     h = -a(3)*ts^2/2 - v(3)*ts + h;
     v = v + a*ts;
@@ -150,67 +138,48 @@ while time <= burn
     v_unit = v/V;
     
   	% projections
-    t_body = T*[1; 0; 0];
-    t_body_Y = body_plane_proj(t_body,'y');
-    t_body_Z = body_plane_proj(t_body,'z');
-    l_body = inv(B2E)*l;
-    l_body_Y = body_plane_proj(l_body,'y');
-    l_body_Z = body_plane_proj(l_body,'z');
-    d_body = inv(B2E)*d;
-    d_body_Y = body_plane_proj(d_body,'y');
-    d_body_Z = body_plane_proj(d_body,'z');
-    g_body = inv(B2E)*g;
-    g_body_Y = body_plane_proj(g_body,'y');
-    g_body_Z = body_plane_proj(g_body,'z');
-    uY_body_Y = [0; 0; UY];
-    uZ_body_Z = [0; UZ; 0];
+    l_body = B2E\l;
+    l_body_Y = [l_body(1); 0; l_body(3)];
+    l_body_Z = [l_body(1); l_body(2); 0];
+    d_body = B2E\d;
+    d_body_Y = [d_body(1); 0; d_body(3)];
+    d_body_Z = [d_body(1); d_body(2); 0];
+    u_body_Y = [0; 0; UY];
+    u_body_Z = [0; UZ; 0];
     
     % Y plane
     X_dot = 0;
     X = X + X_dot*ts;
-    Y_dot = 1/J(2,2) * (cross(l_body_Y,cp) + cross(d_body_Y,cp) + cross(uY_body_Y,cu));
-    Y_dot = theta_dot(2);
+    Y_dot = 1/J(2,2) * (cross(l_body_Y,cp) + cross(d_body_Y,cp) + cross(u_body_Y,cu));
+    Y_dot = Y_dot(2);
     Y = (Y + Y_dot*ts);
-    Z_dot = 1/J(3,3) * (cross(l_body_Z,cp) + cross(d_body_Z,cp) + cross(uZ_body_Z,cu));
-    Z_dot = theta_dot(3);
+    Z_dot = 1/J(3,3) * (cross(l_body_Z,cp) + cross(d_body_Z,cp) + cross(u_body_Z,cu));
+    Z_dot = Z_dot(3);
     Z = (Z + Z_dot*ts);
     
     % B2E matrices
     BX = [1, 0, 0; 0, cos(X), -sin(X); 0, sin(X), cos(X)];
     BY = [cos(pi/2+Y), 0, sin(pi/2+Y); 0, 1, 0; -sin(pi/2+Y), 0, cos(pi/2+Y)];
     BZ= [cos(Z), -sin(Z), 0; sin(Z), cos(Z), 0; 0, 0, 1];
-    B2E = BZ*BY*BX; % order of rotations: X, Y, Z
+    B2E = BX*BY*BZ; % order of rotations: X, Y, Z
     
-    phiX = atan(v(2)/v(3));
-    phiY = atan(v(1)/v(3));
-
-    % V2E matrices
-    VX = [1, 0, 0; 0, cos(phiX), -sin(phiX); 0, sin(phiX), cos(phiX)];
-    VY = [cos(pi/2+phiY), 0, sin(pi/2+phiY); 0, 1, 0; -sin(pi/2+phiY), 0, cos(pi/2+phiY)];
-    V2E = VY*VX; % order of rotations: X, Y
-
     % projection of velocity vector in planes perpendicular to Y and Z body
-    v_body = inv(B2E)*V2E*v_unit;
-    v_body_Y = body_plane_proj(v_body,'y');
-    v_body_Y = v_body_Y/norm(v_body_Y);
-    v_body_Z = body_plane_proj(v_body,'z');
-    v_body_Z = v_body_Z/norm(v_body_Z);
-
-    alphaY = acos( dot(v_body_Y,[1; 0; 0]) );
-    alphaZ = acos( dot(v_body_Z,[1; 0; 0]) );
+    v_body = B2E\v_unit;
+    v_body_Y = [v_body(1); 0; v_body(3)];
+    v_Y = B2E*v_body_Y;
+    v_body_Z = [v_body(1); v_body(2); 0];
+    v_Z = B2E*v_body_Z;
 
     % phi angles in planes perpendicular to Y and Z body
-    phiY_body = acos( dot(B2E*v_body_Y,[-1; 0; 0]) );
-    phiZ_body = acos( dot(B2E*v_body_Z,[-1; 0; 0]) );
+    phiY_body = atan(v_Y(1)/v_Y(3));
+    phiZ_body = atan(v_Z(2)/v_Z(3));
 
     % initial states for s-functions
     initY = [Y; phiY_body];
     initZ = [Z; phiZ_body];
 
     att = B2E*[1; 0; 0]; % attitude vector
-    theta = acos( dot(att, [-1; 0; 0]) );
-    phi = acos( dot(v_unit, [-1; 0; 0]) );
-    alpha = theta - phi;
+    alpha = acos( dot(att,v_unit) );
     v_perp = cross(att, cross(att,v_unit));
     v_perp = v_perp/norm(v_perp);
     
@@ -222,34 +191,37 @@ while time <= burn
     Ma = round(V/c, 2);
     
     % aerodynamics
-    [CD, CL, CP] = aero_coeff(Ma, alpha);
+    [CD, CL, CP] = aero_coeff(Ma, abs(alpha));
     L = 1/2*rho*V^2*S*CL;
     D = 1/2*rho*V^2*S*CD;
     G = m*9.81;
     
     % CP and CU to CG vectors
     CG = CG + CG_dot*ts;
-    tip = B2E*[-CG; 0; 0];
-    cp = B2E*[CP-CG; 0; 0];
-    cu = B2E*[-(CG-CU); 0; 0];
+    tip = [-CG; 0; 0];
+    cp = [CP-CG; 0; 0];
+    cu = [-(CG-CU); 0; 0];
+
+    [Ay,By,Cy,Dy]=linmod('Y_sfun_mdl', [theta_e;phi_e], u_e); % linearization
+    K = place(Ay, By, poles); % gains for desired poles of A-BK
+    UY = -K*[Y; phiY_body]; % control input
     
-    [A,B,Cm,Dm]=linmod('', [theta_e;phi_e], u_e); % linearization
-    K = place(A, B, poles); % gains for desired poles of A-BK
-    U = -K*[theta; phi]; % control input
+    [Az,Bz,Cz,Dz]=linmod('Z_sfun_mdl', [theta_e;phi_e], u_e); % linearization
+    K = place(Az, Bz, poles); % gains for desired poles of A-BK
+    UZ = -K*[Z; phiZ_body]; % control input
     
     time = time + ts;
     
     % plots
-%     figure(1)
-%     plot(time, theta*180/pi, '*k');
-%     figure(2)
-%     plot(time, Ma, '*y');
+    figure(1)
+    plot(time, Y*180/pi, '*k');
+    figure(2)
+    plot(time, Z*180/pi, '*y');
 %     figure(3); 
 %     plot(time, h, '*b')
 %     figure(4);
 %     plot(time, phi*180/pi, '*r')
-%     figure(5);
-%     c_moment = cross(u,cu);
-%     plot(time, c_moment(2), '*g');
+    figure(5);
+    plot(time, UY, '*g', time, UZ, '*r');
 
 end

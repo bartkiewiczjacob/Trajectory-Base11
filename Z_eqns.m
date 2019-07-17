@@ -1,10 +1,10 @@
-function [xdot] = Y_eqns(t,x,w)
+function [xdot] = Z_eqns(t,x,w)
 
-global V X Z phiZ_body m J CG cu Ma UZ ts rho S T
+global V X Y phiY_body m J CG cu Ma UY ts rho S T
 
-Y = x(1);
-phiY_body = x(2);
-UY = w;
+Z = x(1);
+phiZ_body = x(2);
+UZ = w;
 
 % B2E matrices
 BX = [1, 0, 0; 0, cos(X), -sin(X); 0, sin(X), cos(X)];
@@ -76,13 +76,6 @@ B2E = BX*BY*BZ; % order of rotations: X, Y, Z
 % projection of velocity vector in planes perpendicular to Y and Z body
 v_body = B2E\v_unit;
 v_body_Y = [v_body(1); 0; v_body(3)];
-v_body_Y = v_body_Y/norm(v_body_Y);
-v_body_Z = [v_body(1); v_body(2); 0];
-v_body_Z = v_body_Z/norm(v_body_Z);
-
-% projection of velocity vector in planes perpendicular to Y and Z body
-v_body = B2E\v_unit;
-v_body_Y = [v_body(1); 0; v_body(3)];
 v_Y = B2E*v_body_Y;
 v_body_Z = [v_body(1); v_body(2); 0];
 v_Z = B2E*v_body_Z;
@@ -91,7 +84,7 @@ v_Z = B2E*v_body_Z;
 phiY_body_dot = (atan(v_Y(1)/v_Y(3)) - phiY_body)/ts;
 phiZ_body_dot = (atan(v_Z(2)/v_Z(3)) - phiZ_body)/ts;
 
-xdot(1) = Y_dot;
-xdot(2) = phiY_body_dot;
+xdot(1) = Z_dot;
+xdot(2) = phiZ_body_dot;
 
 end
