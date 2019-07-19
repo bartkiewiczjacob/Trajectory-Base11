@@ -2,7 +2,7 @@ clear; clc; close all;
 
 % make the following variables accessible to all scripts and functions
 % without needing to define them
-global V X Y phiY_body m J CG cu Ma UZ ts Z phiZ_body UY rho S T initY initZ
+global V X Y Z phiY phiZ m J cu Ma ts S T rho UY UZ CG
 
 % rocket parameters and properties
 T = 7000; % N
@@ -22,7 +22,7 @@ CU = 2; % m from tip
 theta_e = 0; % equilibrium points
 phi_e = 0;
 u_e = 0;
-poles = [-2 -1]; % poles of A-BK
+poles = [-3 -2]; % poles of A-BK
 
 % retrieve data from aerodynamics test and make it easily accessible by
 % other functions and scripts
@@ -63,7 +63,7 @@ X = 0; % roll angle
 Y = 0.1*pi/180; % pitch angle
 Z = 0.1*pi/180; % yaw angle
 
-% B2E matrices
+% B2 matrices
 BX = [1, 0, 0; 0, cos(X), -sin(X); 0, sin(X), cos(X)];
 BY = [cos(pi/2+Y), 0, sin(pi/2+Y); 0, 1, 0; -sin(pi/2+Y), 0, cos(pi/2+Y)];
 BZ= [cos(Z), -sin(Z), 0; sin(Z), cos(Z), 0; 0, 0, 1];
@@ -71,29 +71,15 @@ B2E = BX*BY*BZ; % order of rotations: X, Y, Z
 
 att = B2E*[1; 0; 0];
 v = [0; 0; 0];
-V = norm(V);
+V = norm(v);
 v_unit = v;
 v_perp = v;
 
-% projection of velocity vector in planes perpendicular to Y and Z body
-v_body = B2E\v_unit;
-v_body_Y = [v_body(1); 0; v_body(3)];
-v_body_Y = v_body_Y/norm(v_body_Y);
-v_body_Z = [v_body(1); v_body(2); 0];
-v_body_Z = v_body_Z/norm(v_body_Z);
-
-% phi angles in planes perpendicular to Y and Z body
-phiY_body = acos( dot(B2E*v_body_Y,[-1; 0; 0]) );
-phiZ_body = acos( dot(B2E*v_body_Z,[-1; 0; 0]) );
-
-% initial states for s-functions
-initY = [Y; phiY_body];
-initZ = [Z; phiZ_body];
-
+% distances in body frame
 CG = len - 16.6995*0.3048; % tip to CG, m
 tip = [-CG; 0; 0]; % tip to CG, vector
 CP = 0; % m
-cp = [CP; 0; 0]; % CP to CG, vector
+cp = [CP-CG; 0; 0]; % CP to CG, vector
 CU = 1; % tip to CU, m
 cu = [-(CG-CU); 0; 0]; % CU to CG, vector
 
@@ -107,11 +93,11 @@ time = 0;
 
 % initialize plots
 figure(1); hold on;
-plot(time, Y*180/pi, '*k');
-xlabel('Time [s]'); ylabel('Pitch [°]');
-figure(2); hold on;
-plot(time, Z*180/pi, '*y')
-xlabel('Time [s]'); ylabel('Yaw [°]');
+plot(time, Y*180/pi, '*g', time, Z*180/pi, '*r');
+xlabel('Time [s]'); ylabel('Angle [°]');
+% figure(2); hold on;
+% plot(time, Z*180/pi, '*b')
+% xlabel('Time [s]'); ylabel('Z [°]');
 % figure(3); hold on;
 % plot(time, h, '*b')
 % xlabel('Time [s]'); ylabel('Altitude [m]');
@@ -121,7 +107,7 @@ figure(5); hold on;
 xlabel('Time [s]'); ylabel('Control moment [Nm]');
 
 %% main loop
-while time <= 3 
+while time <= 5 
     % forces 
     t = T * att;
     l = L * v_perp;
@@ -132,53 +118,54 @@ while time <= 3
     % kinematics, assume no dynamics during ts
     f = t+l+d+g+u;
     a = f/m;
-    h = -a(3)*ts^2/2 - v(3)*ts + h;
-    v = v + a*ts;
+    v = v+a*ts;
     V = norm(v);
     v_unit = v/V;
     
-  	% projections
+    % projections
+    v_body = B2E\v;
+    v_Y = [v_body(1); 0; v_body(3)];
+    v_Z = [v_body(1); v_body(2); 0];
     l_body = B2E\l;
-    l_body_Y = [l_body(1); 0; l_body(3)];
-    l_body_Z = [l_body(1); l_body(2); 0];
+    l_Y = [l_body(1); 0; l_body(3)];
+    l_Z = [l_body(1); l_body(2); 0];
     d_body = B2E\d;
-    d_body_Y = [d_body(1); 0; d_body(3)];
-    d_body_Z = [d_body(1); d_body(2); 0];
-    u_body_Y = [0; 0; UY];
-    u_body_Z = [0; UZ; 0];
+    d_Y = [d_body(1); 0; d_body(3)];
+    d_Z = [d_body(1); d_body(2); 0];
+    u_Y = [0; 0; UY];
+    u_Z = [0; UZ; 0];
     
     % Y plane
     X_dot = 0;
     X = X + X_dot*ts;
-    Y_dot = 1/J(2,2) * (cross(l_body_Y,cp) + cross(d_body_Y,cp) + cross(u_body_Y,cu));
+    Y_dot = 1/J(2,2) * (cross(l_Y,cp) + cross(d_Y,cp) + cross(u_Y,cu));
     Y_dot = Y_dot(2);
     Y = (Y + Y_dot*ts);
-    Z_dot = 1/J(3,3) * (cross(l_body_Z,cp) + cross(d_body_Z,cp) + cross(u_body_Z,cu));
+    Z_dot = 1/J(3,3) * (cross(l_Z,cp) + cross(d_Z,cp) + cross(u_Z,cu));
     Z_dot = Z_dot(3);
     Z = (Z + Z_dot*ts);
     
-    % B2E matrices
+    % phi angles in planes perpendicular to Y and Z body
+    phiY_prev = phiY;
+    phiZ_prev = phiZ;
+    phiY = atan(-v_Y(3)/v_Y(1)) + Y;
+    phiZ = atan(v_Z(2)/v_Z(1)) + Z;
+    phiY_dot = (phiY - phiY_prev)/ts;
+    phiZ_dot = (phiZ - phiZ_prev)/ts;
+
+    % initial states for s-functions
+    initY = [Y; phiY];
+    initZ = [Z; phiZ];
+    
+    % B2 matrices
     BX = [1, 0, 0; 0, cos(X), -sin(X); 0, sin(X), cos(X)];
     BY = [cos(pi/2+Y), 0, sin(pi/2+Y); 0, 1, 0; -sin(pi/2+Y), 0, cos(pi/2+Y)];
     BZ= [cos(Z), -sin(Z), 0; sin(Z), cos(Z), 0; 0, 0, 1];
     B2E = BX*BY*BZ; % order of rotations: X, Y, Z
     
-    % projection of velocity vector in planes perpendicular to Y and Z body
-    v_body = B2E\v_unit;
-    v_body_Y = [v_body(1); 0; v_body(3)];
-    v_body_Z = [v_body(1); v_body(2); 0];
-
-    % phi angles in planes perpendicular to Y and Z body
-    phiY_body = atan(v_body_Y(3)/v_body_Y(1)) + Y;
-    phiZ_body = atan(v_body_Z(2)/v_body_Z(1)) + Z;
-
-    % initial states for s-functions
-    initY = [Y; phiY_body];
-    initZ = [Z; phiZ_body];
-
     att = B2E*[1; 0; 0]; % attitude vector
-    alpha = acos( dot(att,v_unit) );
-    v_perp = cross(att, cross(att,v_unit));
+    alpha = acos(dot(att,v_unit));
+    v_perp = cross(v_unit, cross(att,v_unit));
     v_perp = v_perp/norm(v_perp);
     
     % physical properties
@@ -201,20 +188,20 @@ while time <= 3
     cu = [-(CG-CU); 0; 0];
 
     [Ay,By,Cy,Dy]=linmod('Y_sfun_mdl', [theta_e;phi_e], u_e); % linearization
-    K = place(Ay, By, poles); % gains for desired poles of A-BK
-    UY = -K*[Y; phiY_body]; % control input
+    Ky = place(Ay, By, poles); % gains for desired poles of A-BK
+    UY = -Ky*[Y; phiY]; % control input
     
     [Az,Bz,Cz,Dz]=linmod('Z_sfun_mdl', [theta_e;phi_e], u_e); % linearization
-    K = place(Az, Bz, poles); % gains for desired poles of A-BK
-    UZ = -K*[Z; phiZ_body]; % control input
+    Kz = place(Az, Bz, poles); % gains for desired poles of A-BK
+    UZ = -Kz*[Z; phiZ]; % control input
     
     time = time + ts;
     
     % plots
     figure(1)
-    plot(time, Y*180/pi, '*k');
-    figure(2)
-    plot(time, Z*180/pi, '*y');
+    plot(time, Y*180/pi, '*g', time, Z*180/pi, '*r');
+%     figure(2)
+%     plot(time, Z*180/pi, '*b');
 %     figure(3); 
 %     plot(time, h, '*b')
 %     figure(4);

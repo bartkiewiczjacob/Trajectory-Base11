@@ -2,7 +2,7 @@ clear; clc; close all;
 
 % make the following variables accessible to all scripts and functions
 % without needing to define them
-global T D L G V m J cp cu init ts time
+global T V m J cp cu init ts time Ma rho S CG
 
 % rocket parameters and properties
 T = 7000; % N

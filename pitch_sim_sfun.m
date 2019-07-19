@@ -45,7 +45,7 @@ function sys = mdlDerivatives(t,x,w)
 %
 % Compute xdot based on (t,x,w) and set it equal to sys
 %
-sys = pitch_sim_eqns(t,x,w);
+sys = pitch_sim_eqns_corr(t,x,w);
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
