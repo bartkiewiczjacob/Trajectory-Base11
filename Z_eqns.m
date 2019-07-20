@@ -1,5 +1,5 @@
 function [xdot] = Z_eqns(t,x,w)
-global V X Y phiY m J cu Ma ts S T rho UY CG
+global V X Y phiY m J cu Ma ts S T rho UY CG time
 
 Z = x(1);
 phiZ = x(2);
@@ -21,7 +21,9 @@ v_unit = v/V;
 att = B2E*[1; 0; 0]; % attitude vector
 alpha = acos( dot(att,v_unit) );
 v_perp = cross(v_unit, cross(att,v_unit));
-v_perp = v_perp/norm(v_perp);
+if norm(v_perp) ~= 0
+    v_perp = v_perp/norm(v_perp);
+end
     
 % aerodynamics
 [CD, CL, CP] = aero_coeff(Ma, abs(alpha));
@@ -56,10 +58,10 @@ Z_dot = Z_dot(3);
 
 % phi angles in planes perpendicular to Y and Z body
 phiZ_prev = phiZ;
-phiZ = atan(v_Z(2)/v_Z(1)) + Z;
+v_Ze = B2E*v_Z;
+phiZ = atan(-v_Ze(2)/v_Ze(3));
 phiZ_dot = (phiZ - phiZ_prev)/ts;
 
 xdot(1) = Z_dot;
 xdot(2) = phiZ_dot;
-
 end

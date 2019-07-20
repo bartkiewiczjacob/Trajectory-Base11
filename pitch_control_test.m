@@ -1,4 +1,4 @@
-clear; clc; close all;
+clear; close all;
 
 % make the following variables accessible to all scripts and functions
 % without needing to define them
@@ -60,8 +60,12 @@ J = m * [1/2*r^2, 0, 0; 0, 1/12*len^2 + 1/4*r^2, 0; 0, 0, 1/12*len^2 + 1/4*r^2];
 
 theta = 0.1*pi/180; % pitch angle (attitude to vertical), rad
 B2E = [cos(pi/2+theta) 0 sin(pi/2+theta); 0 1 0; -sin(pi/2+theta) 0 cos(pi/2+theta)]; % transformation matrix, body -> Earth frame
+att = B2E*[1; 0; 0]; % attitude vector 
 phi = 0; % velocity to vertical, rad
 V = 0; % m/s
+v = [0;0;0];
+v_unit = [0;0;0];
+v_perp = [0;0;0];
 alpha = theta - phi; % angle of attack, rad
 init = [theta; phi]; % initial state for s-function (not important)
 
@@ -81,37 +85,22 @@ time = 0;
 U_rec = [U];
 
 % initialize plots
-figure(1); hold on;
-plot(time, theta*180/pi, '*k');
-xlabel('Time [s]'); ylabel('Pitch [°]');
-figure(2); hold on;
-plot(time, V, '*y')
-xlabel('Time [s]'); ylabel('Ma [ ]');
-figure(3); hold on;
-plot(time, h, '*b')
-xlabel('Time [s]'); ylabel('Altitude [m]');
-figure(4); hold on;
-xlabel('Time [s]'); ylabel('\Phi [°]');
-figure(5); hold on;
-xlabel('Time [s]'); ylabel('Control moment [Nm]');
+% figure(1); hold on;
+% plot(time, theta*180/pi, '*k');
+% xlabel('Time [s]'); ylabel('Pitch [°]');
+% figure(2); hold on;
+% plot(time, V, '*y')
+% xlabel('Time [s]'); ylabel('Ma [ ]');
+% figure(3); hold on;
+% plot(time, h, '*b')
+% xlabel('Time [s]'); ylabel('Altitude [m]');
+% figure(4); hold on;
+% xlabel('Time [s]'); ylabel('\Phi [°]');
+% figure(5); hold on;
+% xlabel('Time [s]'); ylabel('Control moment [Nm]');
 
 %% main loop
 while time <= burn 
-    % transformation matrices
-    B2E = [cos(pi/2+theta) 0 sin(pi/2+theta); 0 1 0; -sin(pi/2+theta) 0 cos(pi/2+theta)]; % body -> Earth
-    V2E = [cos(pi/2+phi) 0 sin(pi/2+phi); 0 1 0; -sin(pi/2+phi) 0 cos(pi/2+phi)]; % velocity vector -> earth
-
-    att = B2E*[1; 0; 0]; % attitude vector 
-    v = V*V2E*[1; 0; 0]; % velocity vector
-    % compute unit vectors
-    if V~=0
-        v_unit = v/V;
-        v_perp = [-v(3); 0; v(1)]/V;
-    else 
-        v_unit = v;
-        v_perp = v;
-    end
-    
     % forces 
     t = T * att;
     l = L * v_perp;
@@ -125,14 +114,20 @@ while time <= burn
     h = -a(3)*ts^2/2 - v(3)*ts + h;
     v = v + a*ts;
     V = norm(v);
-    
+    v_unit = v/V;
+    v_perp = [-v(3); 0; v(1)]/V;
+        
     % angles
     theta_dot = 1/J(2,2) * (cross(l,cp) + cross(d,cp) + cross(u,cu));
     theta_dot = theta_dot(2);
     theta = (theta + theta_dot*ts);
     phi = atan(v(1)/v(3));
-    alpha = theta - phi;
+    alpha = abs(theta - phi);
     init = [theta; phi]; % initial state for s-function (not important)
+    
+    % transformation matrices
+    B2E = [cos(pi/2+theta) 0 sin(pi/2+theta); 0 1 0; -sin(pi/2+theta) 0 cos(pi/2+theta)]; % body -> Earth
+    att = B2E*[1; 0; 0]; % attitude vector 
     
     % physical properties
     m = m + m_dot*ts;
@@ -161,16 +156,16 @@ while time <= burn
     time = time + ts;
     
     % plots
-    figure(1)
-    plot(time, theta*180/pi, '*k');
-    figure(2)
-    plot(time, Ma, '*y');
-    figure(3); 
-    plot(time, h, '*b')
-    figure(4);
-    plot(time, phi*180/pi, '*r')
-    figure(5);
-    c_moment = cross(u,cu);
-    plot(time, c_moment(2), '*g');
+%     figure(1)
+%     plot(time, theta*180/pi, '*k');
+%     figure(2)
+%     plot(time, Ma, '*y');
+%     figure(3); 
+%     plot(time, h, '*b')
+%     figure(4);
+%     plot(time, phi*180/pi, '*r')
+%     figure(5);
+%     c_moment = cross(u,cu);
+%     plot(time, c_moment(2), '*g');
 
 end

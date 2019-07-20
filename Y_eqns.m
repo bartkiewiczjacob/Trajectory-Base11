@@ -21,7 +21,9 @@ v_unit = v/V;
 att = B2E*[1; 0; 0]; % attitude vector
 alpha = acos( dot(att,v_unit) );
 v_perp = cross(v_unit, cross(att,v_unit));
-v_perp = v_perp/norm(v_perp);
+if norm(v_perp) ~= 0
+    v_perp = v_perp/norm(v_perp);
+end
     
 % aerodynamics
 [CD, CL, CP] = aero_coeff(Ma, abs(alpha));
@@ -56,7 +58,8 @@ Y_dot = Y_dot(2);
 
 % phi angles in planes perpendicular to Y and Z body
 phiY_prev = phiY;
-phiY = atan(-v_Y(3)/v_Y(1)) + Y;
+v_Ye = B2E*v_Y;
+phiY = atan(v_Ye(1)/v_Ye(3));
 phiY_dot = (phiY - phiY_prev)/ts;
 
 xdot(1) = Y_dot;

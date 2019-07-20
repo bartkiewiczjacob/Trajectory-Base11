@@ -1,8 +1,8 @@
-clear all; clc; close all;
+clear; close all;
 
 % make the following variables accessible to all scripts and functions
 % without needing to define them
-global V X Y Z phiY phiZ m J cu Ma ts S T rho UY UZ CG initY initZ
+global V X Y Z phiY phiZ m J cu Ma ts S T rho UY UZ CG initY initZ time
 
 % rocket parameters and properties
 T = 7000; % N
@@ -22,7 +22,7 @@ CU = 2; % m from tip
 theta_e = 0; % equilibrium points
 phi_e = 0;
 u_e = 0;
-poles = [-1 -0.5]; % poles of A-BK
+poles = [-2 -1]; % poles of A-BK
 
 % retrieve data from aerodynamics test and make it easily accessible by
 % other functions and scripts
@@ -58,18 +58,20 @@ h = 0; % m
 m = m_wet; % kg
 J = m * [1/2*r^2, 0, 0; 0, 1/12*len^2 + 1/4*r^2, 0; 0, 0, 1/12*len^2 + 1/4*r^2]; % kg m2
 
-% body to Earth angles
+% body to Earth initial error angles
 X = 0; % roll angle
 Y = 0.1*pi/180; % pitch angle
-Z = 0.1*pi/180; % yaw angle
+Z = Y; % yaw angle
 
-% B2 matrices
+% B2E matrix
+% Earth frame: x left, y in, z down
+% Body frame (initially): x up, y in, z left
 BX = [1, 0, 0; 0, cos(X), -sin(X); 0, sin(X), cos(X)];
 BY = [cos(pi/2+Y), 0, sin(pi/2+Y); 0, 1, 0; -sin(pi/2+Y), 0, cos(pi/2+Y)];
 BZ= [cos(Z), -sin(Z), 0; sin(Z), cos(Z), 0; 0, 0, 1];
 B2E = BX*BY*BZ; % order of rotations: X, Y, Z
 
-att = B2E*[1; 0; 0];
+att = B2E*[1; 0; 0]; % attitude vector
 v = [0; 0; 0];
 V = norm(v);
 v_unit = v;
@@ -98,10 +100,10 @@ xlabel('Time [s]'); ylabel('Angle [°]');
 % figure(2); hold on;
 % plot(time, Z*180/pi, '*b')
 % xlabel('Time [s]'); ylabel('Z [°]');
-figure(3); hold on;
-xlabel('Time [s]'); ylabel('Ma [ ]');
-figure(4); hold on;
-xlabel('Time [s]'); ylabel('\Phi [°]');
+% figure(3); hold on;
+% xlabel('Time [s]'); ylabel('Ma [ ]');
+% figure(4); hold on;
+% xlabel('Time [s]'); ylabel('\Phi [°]');
 figure(5); hold on;
 xlabel('Time [s]'); ylabel('Control moment [Nm]');
 
@@ -117,11 +119,13 @@ while time <= 28
     % kinematics, assume no dynamics during ts
     f = t+l+d+g+u;
     a = f/m;
+    h = -a(3)*ts^2/2 - v(3)*ts + h;
     v = v+a*ts;
     V = norm(v);
     v_unit = v/V;
+    h = -a(3)*ts^2/2 - v(3)*ts + h;
     
-    % projections
+    % projections in planes perpendicular to pitch (Y) and yaw (Z) axes
     v_body = B2E\v;
     v_Y = [v_body(1); 0; v_body(3)];
     v_Z = [v_body(1); v_body(2); 0];
@@ -134,7 +138,7 @@ while time <= 28
     u_Y = [0; 0; UY];
     u_Z = [0; UZ; 0];
     
-    % Y plane
+    % angular rates
     X_dot = 0;
     X = X + X_dot*ts;
     Y_dot = 1/J(2,2) * (cross(l_Y,cp) + cross(d_Y,cp) + cross(u_Y,cu));
@@ -144,11 +148,13 @@ while time <= 28
     Z_dot = Z_dot(3);
     Z = (Z + Z_dot*ts);
     
-    % phi angles in planes perpendicular to Y and Z body
+    % angles between velocity and vertical in planes perpendicular to Y and Z
     phiY_prev = phiY;
     phiZ_prev = phiZ;
-    phiY = atan(-v_Y(3)/v_Y(1)) + Y;
-    phiZ = atan(v_Z(2)/v_Z(1)) + Z;
+    v_Ye = B2E*v_Y;
+    v_Ze = B2E*v_Z;
+    phiY = atan(v_Ye(1)/v_Ye(3));
+    phiZ = atan(-v_Ze(2)/v_Ze(3));
     phiY_dot = (phiY - phiY_prev)/ts;
     phiZ_dot = (phiZ - phiZ_prev)/ts;
 
@@ -156,7 +162,7 @@ while time <= 28
     initY = [Y; phiY];
     initZ = [Z; phiZ];
     
-    % B2 matrices
+    % B2E matrices
     BX = [1, 0, 0; 0, cos(X), -sin(X); 0, sin(X), cos(X)];
     BY = [cos(pi/2+Y), 0, sin(pi/2+Y); 0, 1, 0; -sin(pi/2+Y), 0, cos(pi/2+Y)];
     BZ= [cos(Z), -sin(Z), 0; sin(Z), cos(Z), 0; 0, 0, 1];
@@ -186,7 +192,7 @@ while time <= 28
     cp = [CP-CG; 0; 0];
     cu = [-(CG-CU); 0; 0];
 
-    [Ay,By,Cy,Dy]=linmod('Y_sfun_mdl', [theta_e;phi_e], u_e); % linearization
+    [Ay,By,Cy,Dy]=linmod('Y_sfun_mdl', [theta_e;phi_e], u_e); % linearization of s-function describing [Y_dot, phiY_dot]=Y_eqns(Y, phiY)
     Ky = place(Ay, By, poles); % gains for desired poles of A-BK
     UY = -Ky*[Y; phiY]; % control input
     
@@ -196,16 +202,22 @@ while time <= 28
     
     time = time + ts;
     
-    % plots
+%     plots
     figure(1)
     plot(time, Y*180/pi, '*g', time, Z*180/pi, '*r');
 %     figure(2)
 %     plot(time, Z*180/pi, '*b');
-    figure(3); 
-    plot(time, Ma, '*b')
-    figure(4);
-    plot(time, phiY*180/pi, '*g', time, phiZ*180/pi, '*r')
+%     figure(3); 
+%     plot(time, Ma, '*b')
+%     figure(4);
+%     plot(time, phiY*180/pi, '*g', time, phiZ*180/pi, '*r')
     figure(5);
     plot(time, UY, '*g', time, UZ, '*r');
-
+    
 end
+
+figure(1)
+legend('Pitch', 'Yaw')
+figure(5)
+ylabel('Control force [N]')
+legend('Pitch', 'Yaw')
