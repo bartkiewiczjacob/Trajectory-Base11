@@ -78,6 +78,7 @@ D = 0;
 G = m*9.81;
 
 time = 0;
+U_rec = [U];
 
 % initialize plots
 figure(1); hold on;
@@ -155,6 +156,7 @@ while time <= burn
     [A,B,Cm,Dm]=linmod('pitch_sim_mdl', [theta_e;phi_e], u_e); % linearization
     K = place(A, B, poles); % gains for desired poles of A-BK
     U = -K*[theta; phi]; % control input
+    U_rec = [U_rec; U];
     
     time = time + ts;
     

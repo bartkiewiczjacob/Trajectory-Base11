@@ -1,8 +1,8 @@
-clear; clc; close all;
+clear all; clc; close all;
 
 % make the following variables accessible to all scripts and functions
 % without needing to define them
-global V X Y Z phiY phiZ m J cu Ma ts S T rho UY UZ CG
+global V X Y Z phiY phiZ m J cu Ma ts S T rho UY UZ CG initY initZ
 
 % rocket parameters and properties
 T = 7000; % N
@@ -22,7 +22,7 @@ CU = 2; % m from tip
 theta_e = 0; % equilibrium points
 phi_e = 0;
 u_e = 0;
-poles = [-3 -2]; % poles of A-BK
+poles = [-1 -0.5]; % poles of A-BK
 
 % retrieve data from aerodynamics test and make it easily accessible by
 % other functions and scripts
@@ -98,16 +98,15 @@ xlabel('Time [s]'); ylabel('Angle [°]');
 % figure(2); hold on;
 % plot(time, Z*180/pi, '*b')
 % xlabel('Time [s]'); ylabel('Z [°]');
-% figure(3); hold on;
-% plot(time, h, '*b')
-% xlabel('Time [s]'); ylabel('Altitude [m]');
-% figure(4); hold on;
-% xlabel('Time [s]'); ylabel('\Phi [°]');
+figure(3); hold on;
+xlabel('Time [s]'); ylabel('Ma [ ]');
+figure(4); hold on;
+xlabel('Time [s]'); ylabel('\Phi [°]');
 figure(5); hold on;
 xlabel('Time [s]'); ylabel('Control moment [Nm]');
 
 %% main loop
-while time <= 5 
+while time <= 28 
     % forces 
     t = T * att;
     l = L * v_perp;
@@ -202,10 +201,10 @@ while time <= 5
     plot(time, Y*180/pi, '*g', time, Z*180/pi, '*r');
 %     figure(2)
 %     plot(time, Z*180/pi, '*b');
-%     figure(3); 
-%     plot(time, h, '*b')
-%     figure(4);
-%     plot(time, phi*180/pi, '*r')
+    figure(3); 
+    plot(time, Ma, '*b')
+    figure(4);
+    plot(time, phiY*180/pi, '*g', time, phiZ*180/pi, '*r')
     figure(5);
     plot(time, UY, '*g', time, UZ, '*r');
 
