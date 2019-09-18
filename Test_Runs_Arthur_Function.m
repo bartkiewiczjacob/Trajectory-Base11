@@ -50,6 +50,8 @@ I_dry = 1/12 * dry_mass_slugs * [3*(diameter_ft/2)^2, 0, 0; ...
                    0, 0, rocket_length^2 + 3*(diameter_ft/2)^2]; %[dry mass Inertia Tensor]
 sim('Purdue_Sim'); % runs the simulation
 max_q = max(q)/144;
+Cd = 0.3;
+S = pi*(0.0254*18)^2/4;
 %Optimization Loop
 n = 10;
 for prop = 1
@@ -94,8 +96,15 @@ for prop = 1
                 mass_payload = 5;
                 wet_mass = mass_propellant + mass_inert + mass_payload;%[lbs]
                 dry_mass = wet_mass - m_dot * burn_time; %[lbs]
-                [t, h] = ode45(@(t, h) vertical_launch(t, h, Thrust, wet_mass, m_dot), [0, 200], [0, 0]);
-                dhdt = vertical_launch(t, h, Thrust, wet_mass, m_dot);
+                [t, h] = ode45(@(t, h) vertical_launch(t, h, Thrust, wet_mass, m_dot, burn_time), [0:1:300], [0, 0]);
+                [temp, A, P, RHO] = atmosisa(h(:,1));
+                m = (wet_mass - m_dot*t)*0.45; %[kg]
+                G = m*9.8; %[N]
+                q = 0.5*transpose(RHO).*h(:,2);
+                max_q = max(q);
+                acceleration = (1./m).*(-Cd*q*S + Thrust*4.45 - G);
+                acceleration = acceleration*3.28;
+                oxidizer_m_array = m/(1+1/OF)*2.22;
                 height_max_OF(prop, j, i, k) = max(h(:, 1));
                 P_c(prop, j, i, k) = Pc;
                 m_dot_o(prop, j, i, k) = D.m_dot_ox;
