@@ -1,4 +1,4 @@
-function [sys,x0,str,ts] = pitch_sim_sfun(t,x,w,flag)
+function [sys,x0,str,ts] = Z_sfun(t,x,w,flag)
 % t is time
 % x is state
 % u is input
@@ -31,8 +31,8 @@ sizes.DirFeedthrough = 0;
 sizes.NumSampleTimes = 1; % Need at least one sample time
 sys = simsizes(sizes);
 %
-global init
-x0 = init; % Set initial state
+global initZ
+x0 = initZ; % Set initial state
 %
 str=[]; % str is always an empty matrix
 ts=[0 0]; % ts must be a matrix of at least one row and two columns
@@ -45,7 +45,7 @@ function sys = mdlDerivatives(t,x,w)
 %
 % Compute xdot based on (t,x,w) and set it equal to sys
 %
-sys = pitch_sim_eqns_corr(t,x,w);
+sys = Z_eqns(t,x,w);
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
