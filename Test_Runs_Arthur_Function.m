@@ -73,7 +73,7 @@ for prop = 1
     end   
     for Thrust = 5000
         i = 1;
-        for Pc = linspace(500, 850, n)
+        for Pc = linspace(750, 850, n)
             k = 1;
             for OF = linspace(2, 3, n) 
                 [mass_engine,ISP,isp_vac,cf,cf_vac,Dt,Dc,De,m_dot] = engineMass(OF, Pc, Pe, L_star, CR, Y, rho, eta_cstar, eta_cf, Thrust, prop, ffc); %engine performance function Ryan Strelau
@@ -91,7 +91,7 @@ for prop = 1
                 mass_pump = PumpSizingModel(D);
                 %mass_pump = 0;
                 mass_sys = 100;
-                mass_inert = mass_engine + mass_pump + tank(1).mass +tank(2).mass + mass_sys+50;
+                mass_inert = mass_engine + mass_pump + tank(1).mass +tank(2).mass + mass_sys;
                 tank_weight = tank(1).mass + tank(2).mass;
                 mass_payload = 5;
                 wet_mass = mass_propellant + mass_inert + mass_payload;%[lbs]
