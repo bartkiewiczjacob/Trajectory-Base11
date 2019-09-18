@@ -5,7 +5,7 @@ clear; clc; close all;
 global T D L G V m J cp cu init ts time
 
 % rocket parameters and properties
-T = 7000; % N
+T = 5000; % N
 m_dot = -20*0.453592; % kg/s
 diam = 18*0.0254; % m
 S = pi*diam^2/4; % m2
@@ -87,12 +87,12 @@ figure(2); hold on;
 plot(time, V, '*y')
 xlabel('Time [s]'); ylabel('Ma [ ]');
 figure(3); hold on;
-plot(time, h, '*b')
-xlabel('Time [s]'); ylabel('Altitude [m]');
+plot(time, h*3.28084, '*b')
+xlabel('Time [s]'); ylabel('Altitude [ft]');
 figure(4); hold on;
 xlabel('Time [s]'); ylabel('\Phi [°]');
 figure(5); hold on;
-xlabel('Time [s]'); ylabel('Control moment [Nm]');
+xlabel('Time [s]'); ylabel('Control moment [lbf-ft]');
 
 %% main loop
 while time <= burn 
@@ -164,11 +164,11 @@ while time <= burn
     figure(2)
     plot(time, Ma, '*y');
     figure(3); 
-    plot(time, h, '*b')
+    plot(time, h*3.28084, '*b')
     figure(4);
     plot(time, phi*180/pi, '*r')
     figure(5);
-    c_moment = cross(u,cu);
+    c_moment = cross(u,cu)*0.737562; % moment in lbf*ft
     plot(time, c_moment(2), '*g');
 
 end
