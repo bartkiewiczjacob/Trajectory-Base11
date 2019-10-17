@@ -74,7 +74,7 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
 
     % Time intervals
     t = 0; % s
-    dt = 0.001; % s
+    dt = 0.01; % s
     
     % Quantity vs Time Vectors
     i = 1;
@@ -87,7 +87,6 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
     v_max = 0; % m/s
     Mach_num_max = 0;
     acc_max = 0; % m/s^2
-    [rho,a,~,~,~,~] = atmos(alt, 'units', 'SI');
 
     fprintf('Simulation running...')
     tic
@@ -106,11 +105,11 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
         m = m_dry_kg + m_prop; % kg
 
         % Determine speed of sound and density at current altitude
-        % [~, a, ~, rho] = atmosisa(alt); (use if aerospace toolbox)
+        % [~, a, ~, rho] = atmosisa(alt);
         % [rho,a] = atmos(alt, 'units', 'SI');
         
-        if (mod(i,50) == 0)
-            [rho,a,~,~,~,~] = atmos(alt, 'units', 'SI');
+        if (mod(i,100) == 0)
+            [rho,a] = atmos(alt, 'units', 'SI');
         end
 
         % Calculate drag force
@@ -150,7 +149,7 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
         % Determine if maximum Mach number has been achieved
         if Mach_num > Mach_num_max
             Mach_num_max = Mach_num;
-%             Mach_num_max_alt = alt; % m
+            % Mach_num_max_alt = alt; % m
         end
 
         % Integrate velocity
@@ -163,9 +162,9 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
     fprintf('done.\n')
     fprintf('Simulation time = %.3f s\n\n', run_time)
 
-    % Print results
-    fprintf('RESULTS\n')
-    fprintf('Max Altitude     = %.2f ft\n', alt*3.28084)
+%     % Print results
+%     fprintf('RESULTS\n')
+%     fprintf('Max Altitude     = %.2f ft\n', alt*3.28084)
 %     fprintf('Time to Apogee   = %.1f s\n', t);
 %     fprintf('Max Speed        = %.1f m/s\n', v_max)
 %     fprintf('Altitude at Max Speed = %.2f ft\n', v_max_alt/0.3048)
