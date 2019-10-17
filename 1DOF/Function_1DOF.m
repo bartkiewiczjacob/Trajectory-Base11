@@ -20,7 +20,7 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
 
     % Dry mass (input)
     % m_dry_lbm = 75; % lbm
-    m_dry = m_dry_lbm / 2.20462; % kg
+    m_dry_kg = m_dry_lbm / 2.20462; % kg
 
     % Drag coefficient (assumed)
     Cd = 0.4;
@@ -37,16 +37,16 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
 
     % Total Impulse (Max allowable = 9208 lbf*s)
     impulse_lbfs = 9208; % lbf*s
-    impulse = impulse_lbfs * 4.44822; % N*s
+    impulse_Ns = impulse_lbfs * 4.44822; % N*s
 
     % Calculate burn time
-    t_b = impulse / thrust_N; % s
+    t_b = impulse_Ns / thrust_N; % s
 
     % Calculate propellant mass
-    m_prop_0 = impulse / (Isp * g_0_ms_2); % kg
+    m_prop_0_kg = impulse_Ns / (Isp * g_0_ms_2); % kg
 
     % Calculate mass flow rate
-    m_dot = m_prop_0 / t_b; % kg/s
+    m_dot_kg_s = m_prop_0_kg / t_b; % kg/s
 
 %     % Print title
 %     fprintf('\n------ 1DOF SIMULATION ------\n\n')
@@ -74,7 +74,7 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
 
     % Time intervals
     t = 0; % s
-    dt = 0.001; % s
+    dt = 0.01; % s
     
     % Quantity vs Time Vectors
     i = 1;
@@ -98,14 +98,15 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
 
         % Calculate total mass
         if t < t_b
-            m_prop = m_prop_0 - m_dot*t; % kg
+            m_prop = m_prop_0_kg - m_dot_kg_s*t; % kg
         else
             m_prop = 0; % kg
         end
-        m = m_dry + m_prop; % kg
+        m = m_dry_kg + m_prop; % kg
 
         % Determine speed of sound and density at current altitude
-        [~, a, ~, rho] = atmosisa(alt);
+        % [~, a, ~, rho] = atmosisa(alt);
+        [rho,a,~,~,~,~] = atmos(alt, 'units', 'SI');
 
         % Calculate drag force
         drag = 0.5 * rho * v^2 * Cd * S; % N
@@ -159,14 +160,13 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
 
 %     % Print results
 %     fprintf('RESULTS\n')
-%     fprintf('Max Altitude     = %.2f ft\n', alt)
+%     fprintf('Max Altitude     = %.2f ft\n', alt*3.28084)
 %     fprintf('Time to Apogee   = %.1f s\n', t);
 %     fprintf('Max Speed        = %.1f m/s\n', v_max)
 %     fprintf('Altitude at Max Speed = %.2f ft\n', v_max_alt/0.3048)
 %     fprintf('Max Mach number  = %.2f \n', Mach_num_max)
 %     fprintf('Altitude at Max Speed = %.2f ft\n', Mach_num_max_alt/0.3048)
 %     fprintf('Max Acceleration = %.2f g''s \n\n', acc_max/g_0_ms_2)
-
 
 end
 
