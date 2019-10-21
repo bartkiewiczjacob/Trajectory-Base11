@@ -1,4 +1,4 @@
-function [mass,isp,isp_vac,cf,cf_vac,Dt,Dc,De,mdot] = engineMass(OF, Pc, Pe, L_star, CR, Y, rho, eta_cstar, eta_cf, thrust, prop, ffc)
+function [mass,isp,isp_vac,cf,cf_vac,Dt,Dc,De,mdot] = engineMass(OF, Pc, Pe, L_star, CR, rho, eta_cstar, eta_cf, thrust, prop, ffc)
 %%  Engine Sizing and Mass Estimate Function
 %
 %   Estimates engine mass based on 
@@ -8,7 +8,6 @@ function [mass,isp,isp_vac,cf,cf_vac,Dt,Dc,De,mdot] = engineMass(OF, Pc, Pe, L_s
 %               Pe (Design Exit Pressure) [PSIA]
 %               L_star (Characteristic Length) [IN]
 %               CR (Contraction Ratio) [-]
-%               Y (Material Yield Stress) [PSI]
 %               rho (Material density) [LB-M/IN^3]
 %               etacstar (combustion efficiency) 
 %               etacf (nozzle efficiency)
@@ -21,27 +20,11 @@ function [mass,isp,isp_vac,cf,cf_vac,Dt,Dc,De,mdot] = engineMass(OF, Pc, Pe, L_s
 %               isp (Specific Impulse) [S]
 %              
 %
-%   Key Assumptions: 
-%
 
 
 %% Useful Constants
 
 g = 32.174; % Gravity [ft/s^2]
-
-%% Initializations
-
-% STRUCTURE MASS 
-mass_structure = 18;
- 
-% Fluid Properties
-T_LCH4 = 111; % Methane Temperature [K]
-T_LOX = 91; % LOX Temperature K]
-
-% Ethanol
-T_eth = 300;                    % Ethanol Temperature [K] 
-h_eth = 266.6; %-434.97;        % Ethanol Enthalpy [kj/kg] from EES Software
-
 %% CEA
 
 % Fluid Properties
@@ -88,49 +71,39 @@ mdot_ffc = mdot_f_total - mdot_f;   % Fuel film cooling %
 mdot = mdot + mdot_ffc;             % Total mass flow rate adjusted for film cooling
 
 At = cstar*mdot/(Pc*g);              % Throat area [in^2]
-Dt = sqrt(4*At/pi);                 % Diameter of Throat [in]
+Dt = sqrt(4*At/pi);                % Diameter of Throat [in]
 
-Ae = AR*At;                         % Area of Exit [in^2]
+Ae = AR*At;                        % Area of Exit [in^2]
 De = sqrt(4*Ae/pi);                 % Diameter of Exit [in]
 
 Lc = L_star/CR;                     % Calculates Chamber Length [in]
 Ac = CR*At;                         % Chamber Area [in^2]
-Dc = sqrt(4*Ac / pi);               % Chamber Diameter [in]
+Dc = sqrt(4*Ac/pi);             % Chamber Diameter [in]
+theta_i = 38;
+theta_e = 9;
 
 %%  Nozzle & Combustor Mass Estimate ( 80% Bell Nozzle)
 
-RF = 2;                                 % Regen factor (Added wall thickness for regen jacket until we better understand the model
+% Nozzle Mass Estimate
 
-t_w = RF*((Pc * Dc / 2) / Y) * 2 ;      % Wall thickness based on hoop stress (FS of 2)
+[x_1,r_1] = getContour(Dt,AR,CR,L_star,theta_i,theta_e);    % Nozzle contour outputs (Axial,Radial) 
 
-[x_1,r_1] = getContour(Dt,AR,CR,Lc);    % Nozzle contour outputs (Axial,Radial)
-r_2 = r_1 + t_w;  
-
-V_nozzle = 0;
-
-for idx = 1:(length(x_1)-1)
-    
+SA_Nozzle = 0;
+for idx = 1:(length(x_1)-1) 
     dx = abs(x_1(idx+1)-x_1(idx));
-    V_nozzle = V_nozzle + pi*dx*((r_2(idx)^2)-(r_1(idx)^2));
-    
+    SA_Nozzle = SA_Nozzle + 2.*pi.*dx.*(r_1(idx));
 end
+Mass_SA_CAD_Model = (46.42/418.91)*(rho/0.321);    % 418.91 [lbm/in^2]
+Mass_nozzle = SA_Nozzle*Mass_SA_CAD_Model; % Nozzle Mass [Lbm]
 
-M_nozzle = rho*V_nozzle;
+% Injector Mass Estimate
+Dc_CAD = 5.2;  
+m_CAD = 6;
+Ac_CAD = (0.25*pi*Dc_CAD^2)*(rho/0.0975);
+M_SA = m_CAD/Ac_CAD;
+Ac = 0.25.*pi.*Dc.^2;
 
+injector_Mass = M_SA.*Ac;
 
-% Rough Estimate for Injector (1 inch thick "puck" on top of chamber)
-
-Vinj = pi * ((Dc+t_w)/2) ^ 2;                       % Finds volume of puck
-Minj = Vinj * rho;                                  % Finds mass of puck
-
-% Tubing mass estimate to regen jacket
-t_tube = 0.093;                                   % Tool wall thickness [in]
-od = 1.5;                                         % Tube OD              [in]
-id = od - 2*t_tube;                               % Tube inner diameter;  [in]
-volume_tube = pi*((od/2)^2 - (id/2)^2);           % [in^3]
-rho_tubing = 0.289;                               % [lbm/in^3]
-mass_tube  = volume_tube * rho * 2 * Lc + 4;       % 4 added pounds for fittings
-
-mass = (M_nozzle + Minj + mass_tube) * 2 + mass_structure;          % Total mass of engine
-
+mass = Mass_nozzle + injector_Mass+15; %[lbm]
 end

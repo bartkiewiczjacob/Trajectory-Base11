@@ -1,4 +1,4 @@
-function [total_mass] = PumpSizingModel(D)
+function [total_mass, power_total] = PumpSizingModel(D)
 %%
 %
 % Call: [mass,T,OD,loss] = PumpModel(rpm,D);
@@ -17,7 +17,7 @@ function [total_mass] = PumpSizingModel(D)
 %  T       = desired torque [N.m]
 %  OD       = outer diameter [m]
 %  loss     = pump losses [W]
-rpm = 60000;
+rpm = D.rpm;
 assumed_eff = 0.5;
 flow_coeff = 0.1;
 head_coeff = 0.6;
@@ -196,9 +196,9 @@ pumpMass_total = 5.26 * (torque_total / 12) ^ 0.638 + mass_line_ox + mass_line_f
 mass = (pumpMass_total) / 2.20462; %lbm to kg 
 T = torque_total * 0.113; %in*lb to N*m
 power_total = power_ox + power_fuel1 * 2;
-motor_mass = power_total /6;
-battery_mass = 12.76 * power_total * 1.5 * (D.tb/60/60);
-inverter = 20;
+motor_mass = power_total /9.3;
+battery_mass = 12.76 * power_total * 1.1 * (D.tb/60/60);
+inverter = 10;
 total_mass = pumpMass_total + motor_mass + battery_mass + inverter;
 
 loss = power_ox * 745.7 * pump_eff_ox; %Loss. Power is converted from hp to w then mutliplied by the pump eff

@@ -2,14 +2,14 @@ clc;
 clear;
 warning('off', 'all');
 load_system('Purdue_Sim');
-diameter = 18; %[in]
+diameter = 6.425; %[in]
 diameter_ft = diameter / 12; %[ft]
-rocket_length = 24; %[ft]
-mass_propellant = 1250 - 500;
-mass_inert = 500;
-mass_payload = 5;
-wet_mass = mass_propellant + mass_inert + mass_payload; %[lbs]
-Thrust = 5000; %[lbs]
+rocket_length = 9; %[ft]
+wet_mass = 118; %[lbs]
+mass_propellant = wet_mass*0.65;
+mass_inert = 118 - mass_propellant;
+mass_payload = 2.2;
+Thrust = 800; %[lbs]
 throttle = 0;
 Throttled_Thrust = Thrust*(1 - throttle);
 Throttle_start_time = 15;
@@ -20,7 +20,7 @@ k_quat = 1;
 quat_statename = 'quat';
 initial_height = 0; %[ft]
 data = load('aerodata.csv');
-burn_time = (200000+Impulse_Savings)/Thrust; %[sec]
+burn_time = 42; %[sec]
 m_dot = mass_propellant/burn_time; %[lbs/sec]
 m_dot_slugs = m_dot / 32.2; %[slugs/sec]
 Throttled_m_dot = m_dot_slugs*(1 - throttle);

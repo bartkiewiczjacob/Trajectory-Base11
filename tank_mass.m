@@ -1,4 +1,4 @@
-function [tank] = tank_mass(prop_struct, tank_pressure, diameter, material, max_q, max_hydro_press)
+function [tank] = tank_mass(prop_struct, diameter, material, max_q, max_hydro_press, tank)
 
 %% Function Information 
 % Description: 
@@ -21,7 +21,7 @@ caps = 62; %in^3
 pump_LOx_XTRA = 5; % %
 pump_LNG_EXTRA = 8; % %
 
-structural_margin = .2;
+structural_margin = 0.2;
 weld_knockdown = .5;
 
 dome_h = diameter/2 / sqrt(2); %square rooted 2 dome height (radial)
@@ -49,13 +49,13 @@ tank(1).h = (tank(1).volume - 4/3*pi*diameter^2/4*dome_h)/(pi*diameter^2/4);
 tank(2).h = (tank(2).volume - 4/3*pi*diameter^2/4*dome_h)/(pi*diameter^2/4);
 
 %Thickness Calculation
-t_press = (tank_pressure * diameter/2) / (material.minallow * weld_knockdown) * (structural_margin + 1);
+t_press = (max(max(tank.press)) * diameter/2) / (material.minallow * weld_knockdown) * (structural_margin + 1);
 p_hydro = max_hydro_press; %* prop_struct(2).density/12^3 * 32.2 * tank(2).h + tank_pressure;
 
 t_hydro = p_hydro * diameter/2 / (2*material.minallow * weld_knockdown)* (structural_margin + 1);
 
-t_required = max(t_hydro, t_press);
-t_required = t_required(1);
+t_required = max(max(t_hydro, t_press));
+
 tank(1).thick = t_required;
 tank(2).thick = t_required;
 
@@ -65,7 +65,7 @@ f_axial = max_q * pi()*diameter^2/4;
 phi = 1/16 * sqrt(diameter/2/t_required);
 gam = 1 - .901*(1-exp(-phi));
 
-f_axial_cr = 2*pi*material.E*t_required^2* (gam / sqrt(3-3*material.mu^2)) + tank_pressure * pi *diameter^2/4;
+f_axial_cr = 2*pi*material.E*t_required^2* (gam / sqrt(3-3*material.mu^2)) + min(min(tank.press)) * pi *diameter^2/4;
 f_axial_cr = f_axial_cr * .6; %eigenvalue buckling knockdown
 
 if(f_axial_cr <= f_axial)
