@@ -76,6 +76,7 @@ tank_temp = -150; %Tank temperature at empty
 x = 1;
 margin = 0;
 for diameter = 18
+for diameter = 16
     S = pi*(0.0254*diameter)^2/4;
     for prop = 3 %Propellant Choice Loop
         j = 1; %Follow existing format for propellant data (Pumps will need to be updated sepereately to accept new fuels)
