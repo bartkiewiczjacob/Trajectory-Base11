@@ -6,10 +6,8 @@ Cn_data = load('cl_M_a.csv');
 Cp_data = load('cp_M_a.csv');
 alpha_data = load('alpha_data.csv');
 M_data = load('M_data.csv');
-air_data = load('air_data.csv');
 
 % design parameters
-T = 5100*4.44822; % N
 d = 18*0.0254; % m
 r = d/2; % m
 S = pi*d^2/4; % m2
@@ -35,6 +33,15 @@ lon = -106.9717;
 day = 119;
 sec = 12*3600;
 h_trailer = 75*0.3048;
+
+% engine
+T = 5100; %[lbs]
+De = 8.5883;
+Dt = 3.1665;
+At = pi*Dt^2/4;
+Pc = 450;
+Pe = 10;
+AR = De^2/Dt^2;
 
 sim('eqns_motion_mdl.slx')
 
