@@ -53,7 +53,7 @@ for i = 1
     z_offset = cg_offset_r*cos(cg_offset_theta);
     sim('Purdue_Sim'); % runs the simulation
     %max_q = max(q)/144;
-    result(i) = max(ans.altitude)*0.0003048;
+    result(i) = max(altitude)*0.0003048;
     i
 end
 histogram(result)

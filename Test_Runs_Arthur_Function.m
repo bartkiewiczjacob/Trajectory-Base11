@@ -5,6 +5,12 @@ warning('off', 'all'); %Turns off Simulink Warnings to clear up command.
 load_system('Purdue_Sim'); %Preloads Sim to decrease run time
 mat_prop = readtable('Material_prop.xlsx'); %Loads material properties for airframe
 Pe = 10; %Exit pressure for nozzle[psi]
+De = 8.5883;
+Dt = 3.1665;
+At = pi*Dt^2/4;
+Pc = 450;
+Pe = 10;
+AR = De^2/Dt^2;
 L_star = 40; %Engine parameter
 CR = 5; %Engine Parameter
 Y = 75000; % Engine parameter [for copper]
@@ -94,11 +100,11 @@ for diameter = 18
             Pc_floor = 350;
             OF_floor = 1;
         end
-        for Thrust = 5100 %Thrust Loop 7000 max for pressure fed, 6000 max for pump
+        for Thrust = 3600 %Thrust Loop 7000 max for pressure fed, 6000 max for pump
             i = 1;
             for Pc = 450 %Chamber Pressure Loop
                 k = 1;
-                for OF = 1.4  %Oxygen to Fuel Ratio Loop
+                for OF = 1.45  %Oxygen to Fuel Ratio Loop
                 %Rocket Design
                     [mass_engine,ISP,isp_vac,cf,cf_vac,Dt,Dc,De,m_dot] = engineMass(OF, Pc, Pe, L_star, CR, rho, eta_cstar, eta_cf, Thrust, prop, ffc); %engine performance function Ryan Strelau & Matt Schmale
                     OF = OF/1.1;
@@ -250,7 +256,7 @@ end
 % end
 % Pc = linspace(Pc_floor, 800, 500);
 % plot(Pc, lambda_plot)
-OF = linspace(1.3, 1.56, 500);
+OF = linspace(1.1, 1.6, 100);
 index = find(height_max_OF ~= 0);
 
 plot(OF, height_max_OF(index))
