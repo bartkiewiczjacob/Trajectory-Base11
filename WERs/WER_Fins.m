@@ -35,7 +35,7 @@
 % OUTPUTS
 % Total mass of fins (pound mass): mass_fins_lbm
 
-function mass_fins_lbm = WER_Fins(L_in, D_in)
+function [mass_fins_lbm, dimensions] = WER_Fins(L_in, D_in)
 
     % BZ fin parameters (trapezoid)
     b_BZ_in = 6.16; % in (half-span or fin height)
@@ -83,5 +83,8 @@ function mass_fins_lbm = WER_Fins(L_in, D_in)
     % Compute mass of fins
     mass_fin_lbm = S_in2 * t_in * rho_Al_lbmin3; % lbm
     mass_fins_lbm = num_fins * mass_fin_lbm; % lbm
+    
+    % Create vector of fin dimensions for output
+    dimensions = [c_r_in, c_t_in, b_in, t_in];
     
 end
