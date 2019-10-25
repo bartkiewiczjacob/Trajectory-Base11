@@ -94,7 +94,7 @@ while v >= 0
     m = m_dry + m_prop; % kg
     
     % Determine speed of sound and density at current altitude
-    [~, a, ~, rho] = atmosisa(alt);
+    [~, a, ~, rho] = altcond1(alt);
     
     % Calculate drag force
     drag = 0.5 * rho * v^2 * Cd * S; % N
