@@ -14,21 +14,23 @@ Y = 0.4;
 
 %% Calculation
 
-wall = p * id / (2 * maxStress * weldFactor + Y * p);
+wall = p * id ./ (2 * maxStress * weldFactor + Y * p);
+
+wall = wall*1000;
+
 
 if wall > 0.375
     wall = 0.5;
 else
     if wall > 0.25
         wall = 0.375;
-    else
-        if wall > 0.125
-        wall = 0.25;
         else
-            wall = 0.125;
+            if wall > 0.125
+            wall = 0.25;
+            else
+                wall = 0.125;
+            end
         end
     end
-end
-
 end
 
