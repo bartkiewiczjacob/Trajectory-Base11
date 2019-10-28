@@ -10,7 +10,7 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
 
 
     % Define constants
-    g_0_ms_2 = 9.8; % m/s^2
+    g_0_ms_2 = 9.80665 ; % m/s^2
     % g_0_ft_s2 = 32.2; % ft/s^2
 
 
@@ -25,7 +25,7 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
     % Drag coefficient (assumed)
     Cd = 0.4;
 
-    % Reference area
+    % Reference area (top down area)
     S = pi * ((diameter/2)*0.0254)^2; % m^2
 
     % Thrust (input)
@@ -71,6 +71,11 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
     alt = 0; % m
     v = 0; % m/s
     acc_old = 0; % m/s^2
+    
+    % Initialize Quantity vs Time Vectors
+    velocity = zeros(1, 75000);
+    altitude = zeros(1, 75000);
+    time = zeros(1,75000);
 
     % Time intervals
     t = 0; % s
@@ -87,7 +92,10 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
     v_max = 0; % m/s
     Mach_num_max = 0;
     acc_max = 0; % m/s^2
-    [rho,a,~,~,~,~] = atmos(alt, 'units', 'SI');
+    %[rho,a,~,~,~,~] = atmos(alt, 'units', 'SI');
+    
+    %[~,a,~,rho] = altcond1(alt);
+
 
     fprintf('Simulation running...')
     tic
@@ -109,9 +117,11 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
         % [~, a, ~, rho] = atmosisa(alt); (use if aerospace toolbox)
         % [rho,a] = atmos(alt, 'units', 'SI');
         
-        if (mod(i,50) == 0)
-            [rho,a,~,~,~,~] = atmos(alt, 'units', 'SI');
-        end
+        [~,a,~,rho] = altcond1(alt);
+        
+%         if (mod(i,50) == 0)
+%             [rho,a,~,~,~,~] = atmos(alt, 'units', 'SI');
+%         end
 
         % Calculate drag force
         drag = 0.5 * rho * v^2 * Cd * S; % N
@@ -164,8 +174,8 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
     fprintf('Simulation time = %.3f s\n\n', run_time)
 
     % Print results
-    fprintf('RESULTS\n')
-    fprintf('Max Altitude     = %.2f ft\n', alt*3.28084)
+%     fprintf('RESULTS\n')
+%     fprintf('Max Altitude     = %.2f ft\n', alt*3.28084)
 %     fprintf('Time to Apogee   = %.1f s\n', t);
 %     fprintf('Max Speed        = %.1f m/s\n', v_max)
 %     fprintf('Altitude at Max Speed = %.2f ft\n', v_max_alt/0.3048)
