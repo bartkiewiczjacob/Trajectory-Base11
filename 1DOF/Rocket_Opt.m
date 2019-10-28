@@ -1,6 +1,7 @@
 %% ROCKET OPTIMIZATION CODE
 
-len_nose = 12; % in 
+% Initial Values
+len_nose = 12; % in (plz change)
 p_start = 200; % psi
 p_inc = 25; % psi
 p_end = 1000; % psi
@@ -63,6 +64,9 @@ for tank_pressure = pressures
         max_Mach(row, col) = Mach_num_max;
         max_acc(row, col) = acc_max;
         alt_max_vel(row, col) = v_max_alt;
+        time_vec(row, col) = time;
+        altitude_vec(row, col) = altitude;
+        velocity_vec(row, col) = velocity;
         
         col = col + 1;
     end
