@@ -1,4 +1,4 @@
-function [wTot] = calcCoAx(idLOX, p, mCH4, mLOX)
+function [wTot, odCH4, odLOX, tCH4, tLOX, hCH4, hLOX] = calcCoAx(idLOX, p, mCH4, mLOX)
 
 %% Description
 
@@ -51,3 +51,6 @@ wCH4 = domeCH4 + wallCH4; % weight of CH4 tank, lb
 wLOX = domeLOX + wallLOX; % weight of LOX tank, lb
 
 wTot = wCH4 + wLOX; % total weight of common bulkhead
+
+hCH4 = h;
+hLOX = h;
