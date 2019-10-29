@@ -19,6 +19,8 @@ function [ M,  Isp_corrected, T2W, q_t, output ] = EngineSizing_FilmCooling( F, 
 % CONTROLS NOTES: change input from Cp to tank_p and move associated calc
 % up in function for use in program, 
 
+delete *.inp; % fixed CEA bug
+
 %% Combustion Properties
 [cstar, ~, M, gamma, T, rho, mu, Pr, Mw, k] = EngineCEA(Pc, OF); 
 
@@ -51,7 +53,7 @@ k_t = k(2);         % Throat thermal conductivity [Btu/hr-ft-R]
 
 %% Performance Evaluation
 epsilon = 1/Me * ((2+(gamma_n-1)*Me^2)/(gamma_n+1))^((gamma_n+1)/(2*(gamma_n-1))); % Expansion ratio
-cf = sqrt(((2*gamma_n^2)/(gamma_n-1)) * (2/(gamma_n+1))^((gamma_n+1)/(gamma_n-1)) * (1-(Pe/Pc)^(gamma_n-1)/2)); % Dimensionless jet thrust
+cf = sqrt(((2*gamma_n^2)/(gamma_n-1)) * (2/(gamma_n+1))^((gamma_n+1)/(gamma_n-1)) * (1-(Pe/Pc)^(gamma_n-1)/gamma_n)); % Dimensionless jet thrust
 cf = cf + (Pe/Pc - Pa/Pc)*epsilon; % Add dimensionless pressure thrust to get thrust coefficient
 cf = cf*0.9; % 90% cf efficiency
 cstar = cstar*0.80; % 90% c* efficiency [ft/s]
