@@ -1,20 +1,23 @@
-function connectorWeight = SectionConnectorWER(diam1,diam2)
+function connectorWeight = SectionConnectorWER(diameter,wallThickness,sectionCount)
 
 %Preset connector values that can be set to change for different stresses
 %if need be
-wallThickness = 1/4;
-connectorLength = 4;
-materialDens = 0.1; %Density in lb/in^3
+connectorThickness = 3/4;   %Thickness of the connecting portion of the section connector
+midThickness = 1/2; %Thickness of the section divider in the middle of the connector
+materialDens = 0.1; %Density in lb/in^3 for aluminum
+connectionLength = 2;   %Length one side of the connector extends into tubing
 
-%Calculates Volumes for lower and upper connector to connect two different
-%diameter sections
-upperSectionVol = (connectorLength/2)*pi()*((diam2/2)^2-((diam2/2)-wallThickness)^2);
-lowerSectionVol = (connectorLength/2)*pi()*((diam1/2)^2-((diam1/2)-wallThickness)^2);
+rocketID = diameter - wallThickness;   %Calculates inner diameter for section
+connectorID = rocketID - connectorThickness;    %calculates the inner diameter of the connector itself
+
+midSectionVol = pi()*((diameter/2)^2)*midThickness; %Volume of the middle section divider
+
+connectionVol = 2*pi()*((rocketID^2)-(connectorID^2));  %Volume of both sides that connect the rocket.
 
 %Calculates total volume to find weight using density
-totalVol = upperSectionVol+lowerSectionVol;
+totalVol = midSectionVol+connectionVol;
 
-%Calculates weight of connector
-connectorWeight = totalVol*materialDens;
+%Calculates weight of connector for total number of connectors
+connectorWeight = (sectionCount - 1)*totalVol*materialDens;
 end
 
