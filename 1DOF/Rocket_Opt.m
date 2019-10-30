@@ -7,6 +7,7 @@ p_inc = 25; % psi
 p_end = 1000; % psi
 pressures = p_start:p_inc:p_end;
 avail_inner_diameters = [4.5 5 5.25 5.5 5.75 6 6.5 7 7.5]; % in
+i=1;
 
 % Initialize result matrices
 % tank pressure = rows, inner diameter = columns
@@ -50,6 +51,10 @@ for tank_pressure = pressures
         
         [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, time]...
             = Function_1DOF(o_d, thrust_eng, m_tot, Isp_eng);
+        if altitude>minalt && altitude<maxalt
+            success(i)=[m_tot, len_tot,thrust_eng,Isp_eng,o_d,t_tank,t_fins,alt,t,v_max,Mach_num_max,acc_max,v_max_alt,time,altitude,velocity];
+            i=i+1;
+        end
         
         dry_mass(row, col) = m_tot;
         length(row, col) = len_tot;
