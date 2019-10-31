@@ -1,4 +1,4 @@
-function [ M,  Isp_corrected, T2W, q_t, output ] = EngineSizing_FilmCooling( F, Pc, D, OF )
+function [ M,  Isp_corrected, T2W, q_t, output ] = EngineSizing_FilmCooling( F, tank_p, D, OF )
 % Written by Robert Groome - Oct 26, 2019
 % Film cooling added by Matt Hoeper - Oct 27, 2019
 % Heat flux calcs to come later
@@ -6,7 +6,7 @@ function [ M,  Isp_corrected, T2W, q_t, output ] = EngineSizing_FilmCooling( F, 
 % impulse and thrust to weight ratio
 % Inputs:
 % F = Engine Thrust [lbf]
-% Pc = Chamber Pressure [psi]
+% tank_p = Tank Pressure [psi]
 % D = Diameter of Vehicle [in]
 % OF = Oxidizer to Fuel Ratio of Engine
 % Outputs:
@@ -18,6 +18,8 @@ function [ M,  Isp_corrected, T2W, q_t, output ] = EngineSizing_FilmCooling( F, 
 
 % CONTROLS NOTES: change input from Cp to tank_p and move associated calc
 % up in function for use in program, 
+
+Pc = tank_p*(0.75*0.8); % convert tank pressure to chamber pressure
 
 delete *.inp; % fixed CEA bug
 
@@ -66,7 +68,7 @@ Dt = 2*sqrt(At/pi); % Throat diameter [in]
 mdot = F / Isp; % Required mass flow [lbf/s]
 tb = Itot / F; % Burn time [s]
 % mprop = mdot * tb; % Total propellant mass [lbf]
-tank_p = Pc/(0.75*0.8);
+% tank_p = Pc/(0.75*0.8);
 
 %% Film Cooling
 mdot_core_fuel = mdot/(1 + OF);
@@ -112,6 +114,6 @@ q_c = Nu_c*k_c/(12*Dc) * (Tr_c-T_c); % Heat flux in the chamber [Btu/hr-ft^2]
 q_t = Nu_t*k_t/(12*Dt) * (Tr_t-T_t); % Heat flux in the throat [Btu/hr-ft^2]
 
 %% Variable Collection
-output = [mdot_ox, mdot_fuel_total, mfuel, mox, tank_p, Dt, epsilon, Lc, Ln, tc, tn, q_c]; % Collection of engine design parameters
+output = [mdot_ox, mdot_fuel_total, mfuel, mox, Pc, Dt, epsilon, Lc, Ln, tc, tn, q_c]; % Collection of engine design parameters
 
 end
