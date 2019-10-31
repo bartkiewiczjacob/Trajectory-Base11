@@ -32,13 +32,13 @@ odCH4 = .5 * idLOX;
 approx = idLOX;
 error = 0.1;
 
-while max(abs(odCH4 - approx)) > error
+% while max(abs(odCH4 - approx)) > error
     odCH4 = (odCH4 + approx) / 2;
     h = abs((vTot - (4 / 3 * pi * (idLOX / 2) .^ 2 .* (odCH4 / 2))) ./ (pi * (idLOX / 2) .^ 2));
     tCH4 = real(wallThickness(dP, odCH4)); % thickness approximately the same when OD is used for ID
     idCH4 = real(odCH4 - 2 * tCH4);
     approx = ((vCH4 - pi * (idCH4 / 2) .^ 2 .* h) / (4 / 3 * pi)) .^ (1 / 3) + 2 * tCH4;
-%     abs(odCH4 - approx)
+    abs(odCH4 - approx)
 end
 odCH4 = approx;
 idCH4 = odCH4 - 2 * tCH4;
@@ -54,5 +54,5 @@ wLOX = domeLOX + wallLOX; % weight of LOX tank, lb
 
 wTot = wCH4 + wLOX; % total weight of common bulkhead
 
-hCH4 = h + odLOX;
-hLOX = h + odLOX;
+hCH4 = h;
+hLOX = h;
