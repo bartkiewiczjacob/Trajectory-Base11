@@ -6,6 +6,10 @@ p_start = 200; % psi
 p_inc = 25; % psi
 p_end = 1000; % psi
 pressures = p_start:p_inc:p_end;
+thr_start = 500;
+thr_inc = 50;
+thr_end = 1500;
+thrusts = thr_start:thr_inc:thr_end;
 avail_inner_diameters = [4.5 5 5.25 5.5 5.75 6 6.5 7 7.5]; % in
 i=1;
 
@@ -34,6 +38,7 @@ col = 1;
 for tank_pressure = pressures
     
     for inner_diameter = avail_inner_diameters
+        for thrust_eng
         
         [m_tank, t_tank, len_tank, o_d] = tankWER(inner_diameter, tank_pressure);
         

@@ -6,6 +6,10 @@ p_start = 200; % psi
 p_inc = 25; % psi
 p_end = 1000; % psi
 pressures = p_start:p_inc:p_end;
+thr_start = 500;
+thr_inc = 50;
+thr_end = 1500;
+thrusts = thr_start:thr_inc:thr_end;
 avail_inner_diameters = [4.5 5 5.25 5.5 5.75 6 6.5 7 7.5]; % in
 i=1;
 
@@ -31,13 +35,16 @@ altitude_vec = zeros(length(pressures), length(avail_inner_diameters));
 row = 1;
 col = 1;
 
+
 for tank_pressure = pressures
     
     for inner_diameter = avail_inner_diameters
         
+        for thrust_eng = thrusts
+        
         [m_tank, t_tank, len_tank, o_d] = tankWER(inner_diameter, tank_pressure);
         
-        [m_eng, thrust_eng, Isp_eng] = propWER(tank_pressure);
+        [m_eng, thrust, Isp_eng] = propWER(tank_pressure);
         
         [m_str, len_str] = structWER(o_d);
         
@@ -56,23 +63,23 @@ for tank_pressure = pressures
             i=i+1;
         end
         
-        dry_mass(row, col) = m_tot;
-        length(row, col) = len_tot;
-        thrust(row, col) = thrust_eng;
-        Isp(row, col) = Isp_eng;
-        outer_diameter(row, col) = o_d;
-        thickness_tank(row, col) = t_tank;
-        thickness_fins(row, col) = t_fins;
-        max_alt(row, col) = alt;
-        t_apo(row, col) = t;
-        max_vel(row, col) = v_max;
-        max_Mach(row, col) = Mach_num_max;
-        max_acc(row, col) = acc_max;
-        alt_max_vel(row, col) = v_max_alt;
-        time_vec(row, col) = time;
-        altitude_vec(row, col) = altitude;
-        velocity_vec(row, col) = velocity;
-        
+%         dry_mass(row, col) = m_tot;
+%         length(row, col) = len_tot;
+%         thrust(row, col) = thrust_eng;
+%         Isp(row, col) = Isp_eng;
+%         outer_diameter(row, col) = o_d;
+%         thickness_tank(row, col) = t_tank;
+%         thickness_fins(row, col) = t_fins;
+%         max_alt(row, col) = alt;
+%         t_apo(row, col) = t;
+%         max_vel(row, col) = v_max;
+%         max_Mach(row, col) = Mach_num_max;
+%         max_acc(row, col) = acc_max;
+%         alt_max_vel(row, col) = v_max_alt;
+%         time_vec(row, col) = time;
+%         altitude_vec(row, col) = altitude;
+%         velocity_vec(row, col) = velocity;
+        end
         col = col + 1;
     end
     row = row + 1;
