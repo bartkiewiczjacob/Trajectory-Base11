@@ -1,5 +1,5 @@
 function [cstar, isp, M, gamma, T, rho, mu, Pr, Mw, k] = EngineCEA(Pc, OF)
-addpath('../cea');
+addpath('../WERs/cea');
 % CEA_ROCKET_EXAMPLE: Uses MATLAB CEA wrapper. For in-depth
 % documentation read the headers of cea_rocket_run.m,
 % cea_rocket_run_single.m, and cea_rocket_read.m
