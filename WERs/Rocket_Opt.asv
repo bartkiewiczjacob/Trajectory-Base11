@@ -47,6 +47,7 @@ prop_outputs = zeros(length(pressures), length(avail_inner_diameters), length(th
 row = 1;
 col = 1;
 up = 1;
+i = 1;
 
 anySuccess = 0;
 
@@ -68,26 +69,23 @@ for thrust_eng = thrusts
 
             [~, m_str, len_str] = Vehicle_WER(o_d, 0);
 
-            len_tot = len_nose + len_str + len_tank
+            len_tot = len_nose + len_str + len_tank;
 
             [m_fins, t_fins] = WER_Fins(len_tot, o_d);
 
             % [m_rec] = recWER();
 
-            m_tot = m_eng + m_fins + m_tank + m_rec + m_str + m_nose
-            
-            o_d
-            thrust_eng
-            m_tot
-            Isp
+            m_tot = m_eng + m_fins + m_tank + m_rec + m_str + m_nose;
 
             [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, time]...
                 = Function_1DOF(o_d, thrust_eng, m_tot, Isp_eng);
             
-            alt
-            
             if alt > min_alt_goal && alt < max_alt_goal
-            success(i)=[index, alt, m_tot, len_tot, thrust_eng, Isp_eng, o_d, tCH4, tLOX, ...
+%             success(i)=[index, alt, m_tot, len_tot, thrust_eng, Isp_eng, o_d, tCH4, tLOX, ...
+%                 t_fins, t, v_max, Mach_num_max, acc_max, v_max_alt,...
+%                 time, altitude, velocity, T2W, q_t, output];
+            success(i)=[index, alt, m_tot, len_tot, thrust_eng, Isp_eng,...
+                o_d, tCH4, tLOX, ...
                 t_fins, t, v_max, Mach_num_max, acc_max, v_max_alt,...
                 time, altitude, velocity, T2W, q_t, output];
             i=i+1;

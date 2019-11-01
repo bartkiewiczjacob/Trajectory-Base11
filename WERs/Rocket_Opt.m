@@ -75,21 +75,14 @@ for thrust_eng = thrusts
             % [m_rec] = recWER();
 
             m_tot = m_eng + m_fins + m_tank + m_rec + m_str + m_nose;
-            
-            o_d
-            thrust_eng
-            m_tot
-            Isp_eng
 
             [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, time]...
                 = Function_1DOF(o_d, thrust_eng, m_tot, Isp_eng);
             
-            alt
-            
             if alt > min_alt_goal && alt < max_alt_goal
-            success(i)=[index, alt, m_tot, len_tot, thrust_eng, Isp_eng, o_d, tCH4, tLOX, ...
-                t_fins, t, v_max, Mach_num_max, acc_max, v_max_alt,...
-                time, altitude, velocity, T2W, q_t, output];
+%             success(i)=[index, alt, m_tot, len_tot, thrust_eng, Isp_eng, o_d, tCH4, tLOX, ...
+%                 t_fins, t, v_max, Mach_num_max, acc_max, v_max_alt,...
+%                 time, altitude, velocity, T2W, q_t, output];
             i=i+1;
             anySuccess = 1;
             end
