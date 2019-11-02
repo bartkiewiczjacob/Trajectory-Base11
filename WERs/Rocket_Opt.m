@@ -1,15 +1,22 @@
 %% ROCKET OPTIMIZATION CODE
 
+clear
+clc
+
 % Initial Values
 len_nose = 34.5; % in (plz change)
+len_bottom = 12; % in (plz change)
 m_nose = 6; % lbm (plz change)
 m_rec = 2; %lbm (plz change)
+m_plumbing = 15; % lbs (plz change)
 
-p_start = 600; % psi
+%% INCREMENT VARIABLES
+
+p_start = 500; % psi
 p_inc = 50; % psi
-p_end = 600; % psi
-T_start = 1000; % lbf
-T_end = 1000; % lbf
+p_end = 500; % psi
+T_start = 1200; % lbf
+T_end = 1200; % lbf
 T_inc = 50; % lbf
 OF = 3; % oxidizer to fuel ratio
 
@@ -21,10 +28,17 @@ pressures = p_start:p_inc:p_end;
 avail_inner_diameters = [5.25 5.5 5.75 6 6.5 7 7.5]; % in
 thrusts = T_start:T_inc:T_end;
 
-% Initialize result matrices
+%% INITIALIZE RESULT MATRICES
 % tank pressure = rows, inner diameter = columns, thrust = up
 dry_mass = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
+mass_fins = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
+mass_eng = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
+mass_tank = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
+mass_str = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
+mass_avionics = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
 rocket_length = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
+tank_length = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
+str_length = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
 Isp = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
 outer_diameter = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
 thickness_tank_CH4 = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
@@ -44,23 +58,23 @@ thrust2weight = zeros(length(pressures), length(avail_inner_diameters), length(t
 heat_flux = zeros(length(pressures), length(avail_inner_diameters), length(thrusts));
 prop_outputs = zeros(length(pressures), length(avail_inner_diameters), length(thrusts), 12);
 
+%% ITERATION VARIABLES
 row = 1;
 col = 1;
 up = 1;
+i = 1;
 
 anySuccess = 0;
 
-%% Calculations
-tic
+%% CALCULATIONS
+% tic
 for thrust_eng = thrusts
     row = 1;
     for tank_pressure = pressures
         col = 1;
-        for inner_diameter = avail_inner_diameters
+        for inner_diameter = 5.75
             
             index = [row col up]
-
-            % [m_tank, t_tank, len_tank, o_d] = tankWER(inner_diameter, tank_pressure);
             
             [m_tank, o_d, odCH4, tLOX, tCH4, len_tank] = tankWER(inner_diameter, tank_pressure);
 
@@ -68,28 +82,42 @@ for thrust_eng = thrusts
 
             [~, m_str, len_str] = Vehicle_WER(o_d, 0);
 
-            len_tot = len_nose + len_str + len_tank;
+            len_tot = len_nose + len_str + len_tank + len_bottom;
 
             [m_fins, t_fins] = WER_Fins(len_tot, o_d);
+            
+            [m_avionics] = avionicsWER(2, 2, 30);
 
             % [m_rec] = recWER();
 
-            m_tot = m_eng + m_fins + m_tank + m_rec + m_str + m_nose;
-
+            m_tot = m_eng + m_fins + m_tank + m_rec + m_str + m_nose + m_avionics;
+            
+%             Isp_eng
+%             m_tot*1.3
+%             thrust_eng
+%             o_d
+                        
             [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, time]...
-                = Function_1DOF(o_d, thrust_eng, m_tot, Isp_eng);
+                = Function_1DOF(o_d, thrust_eng, m_tot*1.3, Isp_eng);
+            
+%             alt
             
             if alt > min_alt_goal && alt < max_alt_goal
-%             success(i)=[index, alt, m_tot, len_tot, thrust_eng, Isp_eng, o_d, tCH4, tLOX, ...
-%                 t_fins, t, v_max, Mach_num_max, acc_max, v_max_alt,...
-%                 time, altitude, velocity, T2W, q_t, output];
+            success(i,:) = [row col up];
             i=i+1;
-            anySuccess = 1;
+            anySuccess = anySuccess + 1;
             end
 
             % Result matrices of all values
             dry_mass(row, col, up) = m_tot;
+            mass_fins(row, col, up) = m_fins;
+            mass_eng(row, col, up) = m_eng;
+            mass_tank(row, col, up) = m_tank;
+            mass_str(row, col, up) = m_str;
+            mass_avionics(row, col, up) = m_avionics;
             rocket_length(row, col, up) = len_tot;
+            tank_length(row, col, up) = len_tank;
+            str_length(row, col, up) = len_str;
             Isp(row, col, up) = Isp_eng;
             outer_diameter(row, col, up) = o_d;
             thickness_tank_CH4(row, col, up) = tCH4;
@@ -115,8 +143,56 @@ for thrust_eng = thrusts
     up = up + 1;
 end
 
-% runtime = toc;
-
-fprintf('Any Successes? %i\n', anySuccess);
+fprintf('Number of Successes: %i\n', anySuccess);
 % fprintf('Simulation time = %.3f s\n', runtime);
 
+%% COMPILE SUCCESSFUL COMBINATIONS FOR EXPORT
+
+if anySuccess > 0
+    
+    [numSuccesses,~] = size(success);
+    
+    general_values = zeros(numSuccesses, 27);
+    success_prop_outputs = zeros(numSuccesses, 12);
+    success_fin_dims = zeros(numSuccesses, 4);
+    
+    for k = 1:numSuccesses
+        
+        general_values(k,:) = [ success(k,1), success(k,2), success(k,3),...
+                pressures(success(k,1)),...
+                avail_inner_diameters(success(k,2)),...
+                thrusts(success(k,3)),...
+                max_alt(success(k,1),success(k,2),success(k,3)),...
+                dry_mass(success(k,1),success(k,2),success(k,3)),...
+                mass_fins(success(k,1),success(k,2),success(k,3)),...
+                mass_eng(success(k,1),success(k,2),success(k,3)),...
+                mass_tank(success(k,1),success(k,2),success(k,3)),...
+                mass_str(success(k,1),success(k,2),success(k,3)),...
+                mass_avionics(success(k,1),success(k,2),success(k,3)),...
+                rocket_length(success(k,1),success(k,2),success(k,3)),...
+                tank_length(success(k,1),success(k,2),success(k,3)),...
+                str_length(success(k,1),success(k,2),success(k,3)),...
+                Isp(success(k,1),success(k,2),success(k,3)),...
+                outer_diameter(success(k,1),success(k,2),success(k,3)),...
+                thickness_tank_CH4(success(k,1),success(k,2),success(k,3)),...
+                thickness_tank_LOX(success(k,1),success(k,2),success(k,3)),...
+                t_apo(success(k,1),success(k,2),success(k,3)),...
+                max_vel(success(k,1),success(k,2),success(k,3)),...
+                max_Mach(success(k,1),success(k,2),success(k,3)),...
+                max_acc(success(k,1),success(k,2),success(k,3)),...
+                alt_max_vel(success(k,1),success(k,2),success(k,3)),...
+                thrust2weight(success(k,1),success(k,2),success(k,3)),...
+                heat_flux(success(k,1),success(k,2),success(k,3)),...
+           ];
+               
+        success_prop_outputs(k,:) = prop_outputs(success(k,1),success(k,2),success(k,3));
+        success_fin_dims(k,:) = thickness_fins(success(k,1),success(k,2),success(k,3));
+               
+    end
+end
+
+%% EXPORT
+
+csvwrite('RESULTS P 400-800 T 800-1200.csv', general_values);
+csvwrite('PROP OUTPUTS P 400-800 T 800-1200.csv', success_prop_outputs);
+csvwrite('FIN DIMS P 400-800 T 800-1200.csv', success_fin_dims);
