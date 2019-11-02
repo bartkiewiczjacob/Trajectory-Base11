@@ -13,7 +13,9 @@ fCooling = 1.1; % film cooling percentage
 mLOX = 32.6676; % required mass of LOX, lbm
 mCH4 = 9.22 * fCooling; % required mass of methane, lbm
 
+mFilm = mCH4 - 9.22;
 
 %% Calculations
 
 [wTot, odCH4, odLOX, tCH4, tLOX, hCH4, hLOX] = calcCoAx(id, p, mCH4, mLOX);
+wTot = wTot + mFilm;
