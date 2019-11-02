@@ -16,19 +16,21 @@ function [ M,  Isp_corrected, T2W, q_t, output ] = EngineSizing_FilmCooling( F, 
 % q_t = Heat flux in the throat [Btu/hr-ft^2]
 % output = a vector of other useful engine variables
 
-% CONTROLS NOTES: change input from Cp to tank_p and move associated calc
-% up in function for use in program, 
+Pc = tank_p*(0.75*0.8);
 
-Pc = tank_p*(0.75*0.8); % convert tank pressure to chamber pressure
-
-delete *.inp; % fixed CEA bug
+delete *.inp;
+delete *.out;
 
 %% Combustion Properties
 [cstar, ~, M, gamma, T, rho, mu, Pr, Mw, k] = EngineCEA(Pc, OF); 
+delete *.inp;
+delete *.out;
 
 %% Film Combustion Properties
 [cstar_film, isp_film, M_film, gamma_film, T_film, rho_film, mu_film, Pr_film, Mw_film, k_film] = EngineCEA(Pc, 0.1); 
-Pe = 12; %Exit pressure, slightly less than atmospheric pressure at sea level
+delete *.inp;
+delete *.out;
+Pe = 14.7; %Exit pressure, slightly less than atmospheric pressure at sea level
 Pa = 14.7; %Atmospheric pressure at sea level
 Itot = 9208; % Total impulse for a O-class engine [lbf-s]
 
@@ -58,7 +60,7 @@ epsilon = 1/Me * ((2+(gamma_n-1)*Me^2)/(gamma_n+1))^((gamma_n+1)/(2*(gamma_n-1))
 cf = sqrt(((2*gamma_n^2)/(gamma_n-1)) * (2/(gamma_n+1))^((gamma_n+1)/(gamma_n-1)) * (1-(Pe/Pc)^((gamma_n-1)/gamma_n))); % Dimensionless jet thrust
 cf = cf + (Pe/Pc - Pa/Pc)*epsilon; % Add dimensionless pressure thrust to get thrust coefficient
 cf = cf*0.9; % 90% cf efficiency
-cstar = cstar*0.80; % 90% c* efficiency [ft/s]
+cstar = cstar*0.90; % 90% c* efficiency [ft/s]
 Isp = cf*cstar / 32.2; % Specific impulse [s]
 
 %% Fluids Evaluation
@@ -68,7 +70,7 @@ Dt = 2*sqrt(At/pi); % Throat diameter [in]
 mdot = F / Isp; % Required mass flow [lbf/s]
 tb = Itot / F; % Burn time [s]
 % mprop = mdot * tb; % Total propellant mass [lbf]
-% tank_p = Pc/(0.75*0.8);
+tank_p = Pc/(0.75*0.8);
 
 %% Film Cooling
 mdot_core_fuel = mdot/(1 + OF);

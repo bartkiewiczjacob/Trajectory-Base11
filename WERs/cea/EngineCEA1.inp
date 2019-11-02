@@ -1,7 +1,7 @@
 problem rocket eq
-    p(psi) = 350
-    o/f = 3
-    pip = 1.75, 29.1667
+    p(psi) = 300
+    o/f = 0.1
+    pip = 1.75, 20.4082
 reac
     fuel = CH4(L) t(K) = 111.640
     ox = O2(L) t(K) = 90.170
