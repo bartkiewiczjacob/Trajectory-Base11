@@ -173,6 +173,8 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
     alt = alt*3.28084;
     altitude = altitude .* 3.28084;
     
+    v_max_alt = v_max_alt*3.28084;
+    
 %     n = find(altitude, 1, 'last');
 %     
 %     time = time(1:n);
