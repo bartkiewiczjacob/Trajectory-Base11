@@ -15,7 +15,7 @@ function [diameter, weight, L] = Vehicle_WER(D, material)
 
     density = .1;    %lbs/in^3
     wallThickness = .125; %in
-    V = 2937.6; %in^3  Calculated volume of upper part of rocket to be used to find height
+    V = 2937.6*0.8; %in^3  Calculated volume of upper part of rocket to be used to find height
     
     if material == 1
         existing = [4.5 5.15 5.375 6.17 7.518 8.005];
@@ -33,5 +33,8 @@ function [diameter, weight, L] = Vehicle_WER(D, material)
     
     volume = pi() * ((diameter / 2)^2 - (diameter/2 - wallThickness)^2) * L;
     weight = volume * density;
+    
+    % add the weight of the airframe below the tank
+    weight = weight + (((pi*(D/2)^2) - (pi*((D-2*wallThickness)/2)^2))*12)*density;
      
 end
