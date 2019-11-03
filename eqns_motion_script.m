@@ -6,26 +6,32 @@ Cn_data = load('cl_M_a.csv');
 Cp_data = load('cp_M_a.csv');
 alpha_data = load('alpha_data.csv');
 M_data = load('M_data.csv');
+air_data = load('air_data.csv');
 
 % design parameters
-d = 18*0.0254; % m
+d = 16*0.0254; % m
 r = d/2; % m
 S = pi*d^2/4; % m2
 len = 24*0.3048; % m
-
-burn_time = 40; % s
-m_wet = 1444.12*0.453592; % kg
-mdot = 23.35*0.453592; % kg/s
-m_dry = m_wet - mdot*burn_time; % kg
+throttle = 1;
+T = 5100; %[lbs]
+T_th = T*throttle;
+t_th = 0;
+margin = 60;
+burn_time = (200000 - T*t_th)/T_th; % s
+m_wet = 1437.33*0.453592 + margin*0.453592; % kg
+mdot = 23.34*0.453592; % kg/s
+mdot_th = mdot*throttle;
+m_dry = m_wet - mdot*t_th - mdot_th*burn_time + margin*0.453592; % kg
 CG = len/2; % m
 
 % initial position
 theta0 = 0; % rad
 psi0 = 0; % rad
 h0 = 4595*0.3048; % m
-u0 = 0; % m/s
-v0 = 0;
-w0 = 0;
+u0 = 0.1; % m/s
+v0 = 0.1;
+w0 = 0.1;
 
 % wind
 lat = 32.9861;
@@ -34,14 +40,40 @@ day = 119;
 sec = 12*3600;
 h_trailer = 75*0.3048;
 
-% engine
-T = 5100; %[lbs]
-De = 8.5883;
-Dt = 3.1665;
+% engine %[lbs]
+De = 8.4932;
+Dt = 3.0968;
 At = pi*Dt^2/4;
 Pc = 450;
 Pe = 10;
 AR = De^2/Dt^2;
 
-sim('eqns_motion_mdl.slx')
+%heating data
+cp = 910; %Material Specific Heat [J/kg*K]
+material_density = 2700; %kg/m^3
+x = 0.1; %Analysis Location from Nose Tip [m]
+t = 0.07*0.0254; %Skin thickness[m]
+figure(1)
+i = 1;
+n = 10;
+qdl_tot = 0;
+for x = 4.3 
+    sim('eqns_motion_mdl.slx')
+    %plot(Wall_Temp);
+    hold on
+    ylabel('Temp [K]')
+    qdl_tot = qdl_tot + heat_in.signals.values;
+end
+x = linspace(0.1, len, n);
+legendCell = cellstr(num2str(x', 'Distance From Nose Tip =%-.2f m'));
+legend(legendCell);
+title('Wall Temp vs. Time')
+xlabel('Time [sec]')
+grid on
+hold off
+figure(2)
+qd_tot.value = qdl_tot*1.3;
+qd_tot.time = heat_in.time;
+plot(heat_in.time, qd_tot.value);
+ 
 
