@@ -29,9 +29,9 @@ CG = len/2; % m
 theta0 = 0; % rad
 psi0 = 0; % rad
 h0 = 4595*0.3048; % m
-u0 = 0.1; % m/s
-v0 = 0.1;
-w0 = 0.1;
+u0 = 0.0; % m/s
+v0 = 0.0;
+w0 = 0.0;
 
 % wind
 lat = 32.9861;
@@ -41,7 +41,10 @@ sec = 12*3600;
 h_trailer = 75*0.3048;
 
 %rail
-lr = 
+lr = 75*0.3048;
+x1 = len*3/4;
+x2 = len*1/4;
+mu = 0.42;
 
 % engine %[lbs]
 De = 8.4932;
@@ -61,16 +64,16 @@ i = 1;
 n = 10;
 qdl_tot = 0;
 kc = 0.35;
-tc = 0.003;
-for x = 4.3 
-    sim('eqns_motion_mdl.slx')
-    plot(Wall_Temp);
-    hold on
-    ylabel('Temp [K]')
-    qdl_tot = qdl_tot + heat_in.signals.values;
-end
-x = linspace(0.1, len, n);
-legendCell = cellstr(num2str(x', 'Distance From Nose Tip =%-.2f m'));
+tc = 0;
+x = 3*d;
+for k = linspace(0.01, 1, 20) 
+    while max(Wall_Temp) > 475
+        sim('eqns_motion_mdl.slx')
+        tc = tc + 0.0005;
+        
+    
+x3 = linspace(0.1, len, n);
+legendCell = cellstr(num2str(x3', 'Distance From Nose Tip =%-.2f m'));
 legend(legendCell);
 title('Wall Temp vs. Time')
 xlabel('Time [sec]')

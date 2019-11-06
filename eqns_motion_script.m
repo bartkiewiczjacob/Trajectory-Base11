@@ -29,9 +29,9 @@ CG = len/2; % m
 theta0 = 0; % rad
 psi0 = 0; % rad
 h0 = 4595*0.3048; % m
-u0 = 0.0; % m/s
-v0 = 0.0;
-w0 = 0.0;
+u0 = 0.1; % m/s
+v0 = 0.1;
+w0 = 0.1;
 
 % wind
 lat = 32.9861;
@@ -64,24 +64,33 @@ i = 1;
 n = 10;
 qdl_tot = 0;
 kc = 0.35;
-tc = 0.003;
-for x = 4.3 
-    sim('eqns_motion_mdl.slx')
-    plot(Wall_Temp);
-    hold on
-    ylabel('Temp [K]')
-    qdl_tot = qdl_tot + heat_in.signals.values;
-end
-x3 = linspace(0.1, len, n);
-legendCell = cellstr(num2str(x3', 'Distance From Nose Tip =%-.2f m'));
-legend(legendCell);
-title('Wall Temp vs. Time')
-xlabel('Time [sec]')
+tc = 0.03;
+x = 3*d;
+% for kc = linspace(0.01, 1, 20) 
+%     Wall_Temp = 500;
+%     while max(Wall_Temp) > 475
+%         sim('eqns_motion_mdl.slx')
+%         tc = tc + 0.0005;
+%     end
+%     tr(i) = tc;
+%     i = i + 1;
+% end 
+% kc = linspace(0.01, 1, 20);
+% plot(kc, tr);
+title('Thickness Required vs. Thermal Conductivity');
+xlabel('K [W/mK]')
+ylabel('Thickness [m]')
 grid on
-hold off
-figure(2)
-qd_tot.value = qdl_tot*1.3;
-qd_tot.time = heat_in.time;
-plot(heat_in.time, qd_tot.value);
+% x3 = linspace(0.1, len, n);
+% legendCell = cellstr(num2str(x3', 'Distance From Nose Tip =%-.2f m'));
+% legend(legendCell);
+% title('Wall Temp vs. Time')
+% xlabel('Time [sec]')
+% grid on
+% hold off
+% figure(2)
+% qd_tot.value = qdl_tot*1.3;
+% qd_tot.time = heat_in.time;
+% plot(heat_in.time, qd_tot.value);
  
 
