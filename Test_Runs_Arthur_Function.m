@@ -9,7 +9,6 @@ De = 8.5883;
 Dt = 3.1665;
 At = pi*Dt^2/4;
 Pc = 450;
-Pe = 10;
 AR = De^2/Dt^2;
 L_star = 40; %Engine parameter
 CR = 5; %Engine Parameter
@@ -22,14 +21,14 @@ diameter = 18; %Rocket Diameter[in]
 diameter_ft = diameter / 12; %Rocket Diameter[ft]
 rocket_length = 24; %Rocket Length [ft]
 % Initial Run Parameters
-ISP = 233.49; %ISP [sec]
+ISP = 190.48; %ISP [sec]
 lambda = 0.6; %Propellant Mass Fraction
-OF = 1.33; %Oxygen to Fuel Ratio
+OF = 1.45; %Oxygen to Fuel Ratio
 mass_propellant = 200000/ISP; %Mass of Propellant [lbm]
 mass_inert = mass_propellant*(1/lambda - 1); %Inert Mass [lbm]
 mass_payload = 5; %Payload Mass [lbm]
 wet_mass = mass_propellant + mass_inert + mass_payload; %GLOW [lbm]
-Thrust = 4677.78; %[lbs]
+Thrust = 5100; %[lbs]
 % Throttle Info For 6DOF (Don't Change This)
 Throttled_Thrust = Thrust;
 Throttle_start_time = 0;

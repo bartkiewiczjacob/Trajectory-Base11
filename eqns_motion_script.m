@@ -30,8 +30,8 @@ theta0 = 0; % rad
 psi0 = 0; % rad
 h0 = 4595*0.3048; % m
 u0 = 0.1; % m/s
-v0 = 0.1;
-w0 = 0.1;
+v0 = 0.0;
+w0 = 0.0;
 
 % wind
 lat = 32.9861;
@@ -59,38 +59,10 @@ cp = 910; %Material Specific Heat [J/kg*K]
 material_density = 2700; %kg/m^3
 x = 0.1; %Analysis Location from Nose Tip [m]
 t = 0.07*0.0254; %Skin thickness[m]
-figure(1)
-i = 1;
-n = 10;
-qdl_tot = 0;
-kc = 0.35;
-tc = 0.03;
-x = 3*d;
-% for kc = linspace(0.01, 1, 20) 
-%     Wall_Temp = 500;
-%     while max(Wall_Temp) > 475
-%         sim('eqns_motion_mdl.slx')
-%         tc = tc + 0.0005;
-%     end
-%     tr(i) = tc;
-%     i = i + 1;
-% end 
-% kc = linspace(0.01, 1, 20);
-% plot(kc, tr);
-title('Thickness Required vs. Thermal Conductivity');
-xlabel('K [W/mK]')
-ylabel('Thickness [m]')
-grid on
-% x3 = linspace(0.1, len, n);
-% legendCell = cellstr(num2str(x3', 'Distance From Nose Tip =%-.2f m'));
-% legend(legendCell);
-% title('Wall Temp vs. Time')
-% xlabel('Time [sec]')
-% grid on
-% hold off
-% figure(2)
-% qd_tot.value = qdl_tot*1.3;
-% qd_tot.time = heat_in.time;
-% plot(heat_in.time, qd_tot.value);
+kc = 0.35; %Insulation Thermal Conductivity [W/mK]
+tc = 0.000; %Insulation Thickness [m]
+k_he = 0.1177; %Helium Thermal Conductivity [W/mK]
+
+
  
 
