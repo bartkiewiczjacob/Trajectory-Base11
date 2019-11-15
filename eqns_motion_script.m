@@ -1,11 +1,7 @@
 clear; clc;
 
 % retrieve aerodynamic data
-Cd_data = load('cd_M.csv');
-Cn_data = load('cl_M_a.csv');
-Cp_data = load('cp_M_a.csv');
-alpha_data = load('alpha_data.csv');
-M_data = load('M_data.csv');
+load('aerodata.mat');
 air_data = load('air_data.csv');
 
 % design parameters
