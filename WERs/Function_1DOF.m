@@ -23,7 +23,7 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
     m_dry_kg = m_dry_lbm / 2.20462; % kg
 
     % Drag coefficient (assumed)
-    Cd = 0.4;
+    Cd = 0.4; % look up models for changing Cd, factor in lengthg
 
     % Reference area (top down area)
     S = pi * ((diameter/2)*0.0254)^2; % m^2

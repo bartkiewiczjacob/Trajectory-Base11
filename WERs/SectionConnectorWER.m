@@ -2,8 +2,8 @@ function connectorWeight = SectionConnectorWER(diameter,wallThickness,sectionCou
 
 %Preset connector values that can be set to change for different stresses
 %if need be
-connectorThickness = 3/4;   %Thickness of the connecting portion of the section connector
-midThickness = 1/2; %Thickness of the section divider in the middle of the connector
+connectorThickness = 1/8;   %Thickness of the connecting portion of the section connector
+midThickness = .25; %Thickness of the section divider in the middle of the connector
 materialDens = 0.1; %Density in lb/in^3 for aluminum
 connectionLength = 2;   %Length one side of the connector extends into tubing
 

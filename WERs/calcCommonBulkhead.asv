@@ -14,7 +14,7 @@ rhoLOX = .0411; % density of LOX, lbm/in^3
 rhoCH4 = .0150; % density of methane, lbm/in^3
 rhoAl = .09754; % density of aluminum, lbm/in^3
 
-wallCH4 = wallThickness(p, id); % minimum thickness of CH4 tank wall, in
+wallCH4 = wallThickness(p, id) % minimum thickness of CH4 tank wall, in
 wallLOX = wallThickness(p, id); % minimum thickness of LOX tank wall, in
 
 odCH4 = id + wallCH4 * 2;

@@ -15,12 +15,12 @@ fCooling = 1.1; % film cooling percentage
 
 impulse = 9208; % lbf*s
 
-mTot = impulse / Isp; % lb
+mTot = impulse / Isp % kg
 
-mLOX = (mTot/(OF+1))*OF;
+mLOX = (mTot/(OF+1))*OF
 mCH4 = (mTot/(OF+1));
 mFilm = mCH4*(fCooling-1);
-mCH4 = mCH4*fCooling;
+mCH4 = mCH4*fCooling
 
 %% Calculations
 
