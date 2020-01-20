@@ -42,6 +42,7 @@ function [mass_fins_lbm, dimensions] = WER_Fins(L_in, D_in)
     c_t_BZ_in = 5; % in (tip chord)
     c_r_BZ_in = 20; % in (root chord)
     S_BZ_in2 = 77; % in^2 (area of fin) 
+    % sweep angle = 66.7 deg
     
     % BZ overall parameters
     L_BZ_in = 154; % in (overall length)

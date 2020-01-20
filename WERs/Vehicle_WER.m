@@ -15,7 +15,7 @@ function [diameter, weight, L] = Vehicle_WER(D, material)
 
     density = .1;    %lbs/in^3
     wallThickness = .125; %in
-    V = 2937.6*0.8; %in^3  Calculated volume of upper part of rocket to be used to find height
+%     V = 2937.6*0.8; %in^3  Calculated volume of upper part of rocket to be used to find height
     
     if material == 1
         existing = [4.5 5.15 5.375 6.17 7.518 8.005];
@@ -24,7 +24,8 @@ function [diameter, weight, L] = Vehicle_WER(D, material)
     end
     [~,I] = min(abs(existing - D));
     diameter = existing(I);
-    L = V ./ (pi * ((D-2*wallThickness) /2) .^ 2);     %Calulates the length of the upper section of the rocket
+%     L = V ./ (pi * ((D-2*wallThickness) /2) .^ 2);     %Calulates the length of the upper section of the rocket
+    L = 24+30;
     if material == 1
 %         wallThickness = (diameter - ID(I))/2;
         weight = linearDensity(I) * L;

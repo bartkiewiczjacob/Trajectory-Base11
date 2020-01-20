@@ -100,6 +100,10 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
 %     fprintf('Simulation running...')
 %     tic
     while v >= 0
+        
+%         if alt > 9 && alt < 11
+%             v
+%         end
 
         % Increment time
         t = t + dt; % s
@@ -170,10 +174,16 @@ function [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, t
         i = i + 1;
     end
     
-    alt = alt*3.28084;
+    %% CONVERSION TO ENGLISH UNITS
+    
+    alt = alt * 3.28084;
     altitude = altitude .* 3.28084;
     
-    v_max_alt = v_max_alt*3.28084;
+    v_max_alt = v_max_alt * 3.28084;
+    v_max = v_max * 3.28084;
+    velocity = velocity .* 3.28084;
+    
+    acc_max = acc_max * 3.28084;
     
 %     n = find(altitude, 1, 'last');
 %     

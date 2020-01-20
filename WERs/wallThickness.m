@@ -7,10 +7,10 @@ function [wall] = wallThickness(p, id)
 
 
 %% Initialization
-
-maxStress = 14000; % maximum allowable stress
+safety_factor = 2.85;
+maxStress = 42000/safety_factor; %14000; % maximum allowable stress from MILHDB5H Al 6061 (psi)
 weldFactor = .85; % welded tank
-Y = 0.4;
+Y = 0.4; % wall thickness coeff
 
 %% Calculation
 

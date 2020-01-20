@@ -2,32 +2,41 @@
 
 % IF ISP IS BELOW 100, delete EngineCEA.inp & EngineCEA.out from cea folder
 
+% additional refinements: 
+% nosecone 
+% upper airframe length 
+% helium tank dimensions
+% fin sizing
+
 clear
 clc
 
 % Initial Values
-len_nose = 34.5; % in (plz change)
-len_bottom = 12; % in (plz change)
-m_nose = 6; % lbm (plz change)
-m_rec = 2; %lbm (plz change)
+len_nose = 34.5; % in (plz change) madcow 6 in metal tip fiberglass length
+len_bottom = 30; % in (plz change)
+m_nose = 5.5; % lbm (plz change) madcow 6 in metal tip fiberglass mass
+m_rec = 2.5; %lbm (plz change) 16 in parachute rocketman + 0.5 lbs hardware
 m_plumbing = 15; % lbs (plz change)
+m_payload = 2.2; % assumed mass of 1 kg
+m_helium = 4.5; % average mass of helium tank, 4 lb empty, 5 lb full
+len_helium = 24; % in
 
 %% INCREMENT VARIABLES
 
-p_start = 400; % psi
+p_start = 500; % psi
 p_inc = 50; % psi
-p_end = 800; % psi
-T_start = 800; % lbf
-T_end = 1200; % lbf
+p_end = 700; % psi
+T_start = 900; % lbf
+T_end = 1100; % lbf
 T_inc = 50; % lbf
 OF = 3; % oxidizer to fuel ratio
 
 % Altitude requirements
-min_alt_goal = 42500; % ft
+min_alt_goal = 30000; % ft
 max_alt_goal = 50000; % ft
 
 pressures = p_start:p_inc:p_end;
-avail_inner_diameters = [5.75 6 6.5 7 7.5];% [5.25 5.5 5.75 6 6.5 7 7.5]; % in
+avail_inner_diameters = 6.25;%[5.75 6 6.25 6.5]; %[5.75 6 6.5 7 7.5];% [5.25 5.5 5.75 6 6.5 7 7.5]; % in
 thrusts = T_start:T_inc:T_end;
 
 %% INITIALIZE RESULT MATRICES
@@ -71,11 +80,11 @@ anySuccess = 0;
 
 %% CALCULATIONS
 % tic
-for thrust_eng = thrusts
+for thrust_eng = thrusts % thrusts
     row = 1;
-    for tank_pressure = pressures
+    for tank_pressure = pressures % pressures
         col = 1;
-        for inner_diameter = avail_inner_diameters
+        for inner_diameter = avail_inner_diameters % avail_inner_diameters
             
             index = [row col up]
             
@@ -89,7 +98,7 @@ for thrust_eng = thrusts
             
             [~, m_str, len_str] = Vehicle_WER(o_d, 0);
 
-            len_tot = len_nose + len_str + len_tank + len_bottom;
+            len_tot = len_nose + len_str + len_tank + len_bottom; % + len_helium;
 
             [m_fins, t_fins] = WER_Fins(len_tot, o_d);
             
@@ -99,7 +108,7 @@ for thrust_eng = thrusts
 
             % [m_rec] = recWER();
 
-            m_tot = m_eng + m_fins + m_tank + m_rec + m_str + m_nose + m_avionics + m_connectors;
+            m_tot = m_eng + m_fins + m_tank + m_rec + m_str + m_nose + m_avionics + m_connectors + m_payload + m_helium;
                         
             [alt, t, v_max, v_max_alt, Mach_num_max, acc_max, velocity, altitude, time]...
                 = Function_1DOF(o_d, thrust_eng, m_tot*1.3, Isp_eng);
@@ -197,6 +206,8 @@ if anySuccess > 0
 end
 
 %% EXPORT
+
+csvwrite('Updated Results 1-19-20.csv', general_values);
 
 % csvwrite('RESULTS 11-16 P 400-800 T 800-1200.csv', general_values);
 % csvwrite('PROP OUTPUTS 11-16 P 400-800 T 800-1200.csv', success_prop_outputs);
